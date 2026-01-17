@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 80px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Signup</h1>
+
+        <!-- views/signup.ejs -->
+        <form action="/user/signup" method="POST" novalidate>
+            <!-- General error -->
+            <% if (errors && errors.general) { %>
+                <p style="color:red">
+                    <%= errors.general %>
+                </p>
+                <% } %>
+
+                    <!-- Name -->
+                    <label>
+                        Name
+                        <input type="text" name="name" value="<%= oldInput ? oldInput.name : '' %>" required>
+                    </label>
+                    <% if (errors && errors.name) { %>
+                        <p style="color:red">
+                            <%= errors.name %>
+                        </p>
+                        <% } %>
+
+                            <!-- Email -->
+                            <label>
+                                Email
+                                <input type="email" name="email" value="<%= oldInput ? oldInput.email : '' %>" required>
+                            </label>
+                            <% if (errors && errors.email) { %>
+                                <p style="color:red">
+                                    <%= errors.email %>
+                                </p>
+                                <% } %>
+
+                                    <!-- Password -->
+                                    <label>
+                                        Password
+                                        <input type="password" name="password" required>
+                                    </label>
+                                    <% if (errors && errors.password) { %>
+                                        <p style="color:red">
+                                            <%= errors.password %>
+                                        </p>
+                                        <% } %>
+
+                                            <button type="submit">Create Account</button>
+        </form>
+
+
+        <div class="footer">
+            Already have an account?
+            <a href="/login">Login</a>
+        </div>
+    </div>
+
+</body>
+
+</html>
+
+
+<!-- <% if (errors) { %>
+                <ul style="color:red">
+                    <% Object.values(errors).forEach(fieldMsgs=> { %>
+                        <% fieldMsgs.forEach(msg=> { %>
+                            <li>
+                                <%= msg %>
+                            </li>
+                            <% }) %>
+                                <% }) %>
+                </ul>
+                <% } %> -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+</head>
+
+<body>
+    <h1>Signup </h1>
+    <form action="/user/signup" method="POST">
+        <label>Name: <input type="text" name="name" required></label>
+        <label>Email: <input type="email" name="email" required></label>
+        <label>Password: <input type="password" name="password" required></label>
+        <button type="submit">Signup</button>
+    </form>
+</body>
+
+</html> -->
