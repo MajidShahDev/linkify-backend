@@ -2,6 +2,7 @@ const express = require("express");
 // const {} = require("../controllers/url");
 const URL = require("../models/url.model");
 const { restrictTo } = require("../middlewares/auth.middleware");
+const { resetPasswordTokenRequired } = require("../middlewares/tokenRequired.middleware");
 
 const router = express.Router();
 
@@ -17,10 +18,8 @@ router.get("/signup", async (req, res) => {
 router.get("/login", async (req, res) => {
   return res.render("login", {
     errors: {},
-    message: null,
     oldInput: {},
-    error: null,
-    info: null,
+    
   });
 });
 router.get("/forgot-password", async (req, res) => {
@@ -30,16 +29,16 @@ router.get("/forgot-password", async (req, res) => {
     oldInput: {},
   });
 });
-router.get("/reset-password", async (req, res) => {
-  return res.render("reset-password", {
-    token: null,
-    error: null,
-    oldInput: {},
-  });
-});
+// router.get("/reset-password", async (req, res) => {
+//   return res.render("reset-password", {
+//     token: null,
+//     error: null,
+//     oldInput: {},
+//   });
+// });
 
 // Show reset password form
-router.get("/reset-password/:token", (req, res) => {
+router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
   const { token } = req.params;
 
   // Render your reset-password page with the token
