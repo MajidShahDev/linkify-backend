@@ -1,45 +1,46 @@
 const { validationResult } = require("express-validator");
 const { signup, login } = require("../services/user.service"); // adjust path
+const { handleSendVerificationEmail } = require("../controllers/verifyEmail.controller");
 
-async function handleUserSignup(req, res) {
-  const errors = validationResult(req);
-  console.log(errors.array());
+// async function handleUserSignup(req, res) {
+//   const errors = validationResult(req);
+//   // console.log(errors.array());
 
-  if (!errors.isEmpty()) {
-    const fieldErrors = {};
+//   if (!errors.isEmpty()) {
+//     const fieldErrors = {};
 
-    errors.array().forEach((err) => {
-      if (!fieldErrors[err.path]) {
-        fieldErrors[err.path] = [];
-      }
-      fieldErrors[err.path].push(err.msg);
-    });
+//     errors.array().forEach((err) => {
+//       if (!fieldErrors[err.path]) {
+//         fieldErrors[err.path] = [];
+//       }
+//       fieldErrors[err.path].push(err.msg);
+//     });
 
-    return res.status(400).render("signup", {
-      errors: fieldErrors,
-      oldInput: {
-        name: req.body.name || "",
-        email: req.body.email || "",
-      },
-    });
-  }
+//     return res.status(400).render("signup", {
+//       errors: fieldErrors,
+//       oldInput: {
+//         name: req.body.name || "",
+//         email: req.body.email || "",
+//       },
+//     });
+//   }
 
-  try {
-    const { name, email, password } = req.body;
-    await signup({ name, email, password });
-    return res.redirect("/login");
-  } catch (err) {
-    return res.status(400).render("signup", {
-      errors: {
-        email: [err.message], // <-- always an array
-      },
-      oldInput: {
-        name: req.body.name || "",
-        email: req.body.email || "",
-      },
-    });
-  }
-}
+//   try {
+//     const { name, email, password } = req.body;
+//     await signup({ name, email, password });
+//     return res.redirect("/login");
+//   } catch (err) {
+//     return res.status(400).render("signup", {
+//       errors: {
+//         email: [err.message], // <-- always an array
+//       },
+//       oldInput: {
+//         name: req.body.name || "",
+//         email: req.body.email || "",
+//       },
+//     });
+//   }
+// }
 
 // async function handleUserSignup(req, res) {
 //   try {
@@ -69,6 +70,51 @@ async function handleUserSignup(req, res) {
 //     return res.status(400).render("login", { error: err.message });
 //   }
 // }
+
+async function handleUserSignup(req, res) {
+  const errors = validationResult(req);
+  // console.log(errors.array());
+
+  if (!errors.isEmpty()) {
+    const fieldErrors = {};
+
+    errors.array().forEach((err) => {
+      if (!fieldErrors[err.path]) {
+        fieldErrors[err.path] = [];
+      }
+      fieldErrors[err.path].push(err.msg);
+    });
+
+    return res.status(400).render("signup", {
+      errors: fieldErrors,
+      oldInput: {
+        name: req.body.name || "",
+        email: req.body.email || "",
+      },
+    });
+  }
+
+  try {
+    const { name, email, password } = req.body;
+    const user = await signup({ name, email, password });
+    await handleSendVerificationEmail(user);
+    return res.render("verify-email", {
+    message: "Signup successful!",
+    error: null,
+    info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
+  });
+  } catch (err) {
+    return res.status(400).render("signup", {
+      errors: {
+        email: [err.message], // <-- always an array
+      },
+      oldInput: {
+        name: req.body.name || "",
+        email: req.body.email || "",
+      },
+    });
+  }
+}
 
 async function handleUserLogin(req, res) {
   const errors = validationResult(req);

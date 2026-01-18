@@ -8,6 +8,8 @@ const redirectRouter = require("./routes/redirect.routes");
 const staticRouter = require("./routes/static.routes.js");
 const userRouter = require("./routes/user.routes.js");
 const uploadRouter = require("./routes/upload.routes");
+const forgotPasswordRouter = require("./routes/forgotPassword.routes.js")
+const verifyEmailRouter = require("./routes/verifyEmail.routes");
 
 const path = require("path");
 const {
@@ -40,6 +42,8 @@ app.use(tryAuthenticateUser);
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
 app.use("/user", userRouter); // route handle user login(post) and sign up(post)
 app.use("/url", urlRouter); // route handle generate(post) new shorturl and get analytics of short url
+app.use("/", verifyEmailRouter);
+app.use("/", forgotPasswordRouter);
 app.use("/", staticRouter); // route handle static home, signIn, signup page
 app.use("/", redirectRouter); // route handle redirect to orignalUrl from shortId.
 
