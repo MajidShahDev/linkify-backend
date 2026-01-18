@@ -17,6 +17,43 @@ router.get("/signup", async (req, res) => {
 router.get("/login", async (req, res) => {
   return res.render("login", {
     errors: {},
+    message: null,
+    oldInput: {},
+    error: null,
+    info: null,
+  });
+});
+router.get("/forgot-password", async (req, res) => {
+  return res.render("forgot-password", {
+    message: null,
+    error: null,
+    oldInput: {},
+  });
+});
+router.get("/reset-password", async (req, res) => {
+  return res.render("reset-password", {
+    token: null,
+    error: null,
+    oldInput: {},
+  });
+});
+
+// Show reset password form
+router.get("/reset-password/:token", (req, res) => {
+  const { token } = req.params;
+
+  // Render your reset-password page with the token
+  return res.render("reset-password", {
+    token, // needed in form action
+    error: null, // no error initially
+  });
+});
+
+router.get("/verify-email", async (req, res) => {
+  return res.render("verify-email", {
+    message: null,
+    error: null,
+    info: null,
     oldInput: {},
   });
 });
