@@ -18,13 +18,26 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ['NORMAL', 'ADMIN'],
-      default: 'NORMAL',
-    }
+      enum: ["NORMAL", "ADMIN"],
+      default: "NORMAL",
+    },
+    // Fields for forgot-password functionality
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
+     isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
   },
   { timestamps: true }
 );
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
-module.exports = User
+module.exports = User;
