@@ -9,51 +9,44 @@ const router = express.Router();
 // router.route("/").get(handleRedirectToOrignalURL);
 
 router.get("/signup", async (req, res) => {
-  return res.render("signup", {
+  return res.render("auth/signup", {
     errors: {},
     oldInput: {},
   });
 });
 
 router.get("/login", async (req, res) => {
-  return res.render("login", {
+  return res.render("auth/login", {
     errors: {},
     oldInput: {},
     
   });
 });
 router.get("/forgot-password", async (req, res) => {
-  return res.render("forgot-password", {
+  return res.render("auth/forgot-password", {
     message: null,
     error: null,
     oldInput: {},
   });
 });
-// router.get("/reset-password", async (req, res) => {
-//   return res.render("reset-password", {
-//     token: null,
-//     error: null,
-//     oldInput: {},
-//   });
-// });
+
 
 // Show reset password form
 router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
   const { token } = req.params;
 
   // Render your reset-password page with the token
-  return res.render("reset-password", {
+  return res.render("auth/reset-password", {
     token, // needed in form action
     error: null, // no error initially
   });
 });
 
 router.get("/verify-email", async (req, res) => {
-  return res.render("verify-email", {
+  return res.render("auth/verify-email", {
     message: null,
     error: null,
     info: null,
-    oldInput: {},
   });
 });
 

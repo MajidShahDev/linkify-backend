@@ -33,9 +33,6 @@ async function sendResetEmail(email, token) {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-  tls: {
-    rejectUnauthorized: false
-  }
   });
   
    transporter.verify((error, success) => {
@@ -60,6 +57,7 @@ async function resetPassword(token, newPassword) {
   const user = await User.findOne({
     resetPasswordToken: token,
     resetPasswordExpires: { $gt: Date.now() }, // check if token is not expired
+    //                                            storedExpiryTime > currentTime return true else false
   });
 
   if (!user) {
