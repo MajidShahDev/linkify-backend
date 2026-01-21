@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
       enum: ["NORMAL", "ADMIN"],
       default: "NORMAL",
     },
+
     // Fields for forgot-password functionality
     resetPasswordToken: {
       type: String,
@@ -28,14 +29,14 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpires: {
       type: Date,
     },
-     isEmailVerified: {
+    isEmailVerified: {
       type: Boolean,
       default: false,
     },
     emailVerificationToken: String,
     emailVerificationExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.model("User", userSchema);

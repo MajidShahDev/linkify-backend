@@ -20,20 +20,23 @@
 
 4️⃣ Recommended Structure:
 controllers/
-└── url.controller.js       ✅  (all URL logic here)
+└── url.controller.js      
 
-routes/
-├── url.routes.js           (create + analytics)
-└── redirect.routes.js      (redirect route)
+middlewares/
+└── auth.middleware.js
 
 models/
-└── url.model.js            (URL schema)
+└── url.model.js            
+
+routes/
+└── url.routes.js           
 
 services/
 └── auth.service.js
 
-middlewares/
-└── auth.middleware.js
+views/
+└── home.ejs
+
 
 
 
@@ -53,14 +56,102 @@ app.js
 
 // Think of your app like a company:
 --------------------------------------------------------------------------------------------------------------------------------------------------------
-| Layer          | Role               | Responsibility                                                                                   |
-| -------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
-| **Route**      | Receptionist       | Defines HTTP endpoints (paths & methods) and maps them to controllers                              |
-| **Middleware** | Security / Gate    | Checks, transforms, or enriches requests before controllers (auth, validation, logging, etc.)    |
-| **Controller** | Manager            | Decides **how requests are handled**: call services, handle errors, render views or return JSON   |
-| **Service**    | Brain / Specialist | Decides **what should happen**: business logic like creating users, generating short URLs, hashing passwords |
-| **Model**      | Storage            | Handles DB operations: queries, inserts, updates, schema definition                               |
-| **View**       | Presentation       | Renders HTML pages (EJS, Pug, Handlebars) or JSON formatting for API responses                     |
+| Layer          | Role               | Responsibility                                                                                   
+| -------------- | -------------------| ----------------------------------------------------------------------------------------------------------------
+| **Route**      | Receptionist       | Defines HTTP endpoints (paths & methods) and maps them to controllers                              
+| **Middleware** | Security / Gate    | Checks, transforms, or enriches requests before controllers (auth, validation, logging, etc.)    
+| **Controller** | Manager            | Decides **how requests are handled**: call services, handle errors, render views or return JSON   
+| **Service**    | Brain / Specialist | Decides **what should happen**: business logic like creating users, generating short URLs, hashing passwords 
+| **Model**      | Storage            | Handles DB operations: queries, inserts, updates, schema definition                               
+| **View**       | Presentation       | Renders HTML pages (EJS, Pug, Handlebars) or JSON formatting for API responses                     
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+Recommended views / Linkify-Backend/
+│
+├── controllers/                     # Handle business logic
+│   ├── auth.controller.js           # signup, login, logout, verify email
+│   ├── forgotPassword.controller.js
+│   ├── resetPassword.controller.js
+│   └── url.controller.js            # create, list, analytics
+│
+├── middlewares/                     # Custom middleware
+│   ├── auth.middleware.js           # protect routes, check roles
+│   ├── rateLimiter.middleware.js
+│   └── errorHandler.middleware.js
+│
+├── models/                          # Database schemas
+│   ├── user.model.js
+│   └── url.model.js
+│
+├── routes/                          # API and page routes
+│   ├── auth.routes.js
+│   ├── forgotPassword.routes.js
+│   ├── resetPassword.routes.js
+│   ├── url.routes.js
+│   └── index.routes.js              # optional, combine all routes
+│
+├── services/                        # Reusable business logic / helpers
+│   ├── auth.service.js              # JWT, hashing, token handling
+│   ├── mail.service.js              # nodemailer / email helpers
+│   ├── url.service.js               # link shortening, analytics
+│   └── validation.service.js
+│
+├── utils/                           # Utility functions
+│   ├── logger.js                    # winston or morgan setup
+│   ├── apiResponse.js               # standard API response format
+│   └── helpers.js
+│
+├── config/                          # App configuration & environment
+│   ├── db.config.js
+│   ├── app.config.js
+│   └── mail.config.js
+│
+├── views/                           # EJS templates
+│   ├── auth/
+│   │   ├── login.ejs
+│   │   ├── signup.ejs
+│   │   ├── forgot-password.ejs
+│   │   ├── reset-password.ejs
+│   │   └── verify-email.ejs
+│   │
+│   ├── dashboard/
+│   │   └── index.ejs
+│   │
+│   ├── links/
+│   │   ├── create.ejs
+│   │   ├── list.ejs
+│   │   └── analytics.ejs
+│   │
+│   ├── partials/
+│   │   ├── head.ejs
+│   │   ├── navbar.ejs
+│   │   ├── footer.ejs
+│   │   └── flash-messages.ejs
+│   │
+│   ├── layouts/
+│   │   ├── auth-layout.ejs
+│   │   └── main-layout.ejs
+│   │
+│   └── errors/
+│       ├── 404.ejs
+│       └── 500.ejs
+│
+├── public/                          # Static assets
+│   ├── css/
+│   ├── js/
+│   ├── images/
+│   └── fonts/
+│
+├── tests/                           # Unit / integration tests
+│   ├── auth.test.js
+│   └── url.test.js
+│
+├── .env                             # Environment variables
+├── .gitignore
+├── package.json
+├── package-lock.json
+├── index.js / app.js                # Entry point
+└── README.md
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------

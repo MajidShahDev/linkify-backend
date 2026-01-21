@@ -57,7 +57,7 @@ async function handleSendVerificationEmail(reqOrUser, res = null) {
   } catch (err) {
     // If res exists, render page with error
     if (res) {
-      return res.render("verify-email", {
+      return res.render("auth/verify-email", {
         message: null,
         error: err.message,
         info: null,
@@ -109,7 +109,7 @@ async function handleResendVerificationEmail(req, res) {
     if (!user) throw new Error("User not found");
 
     if (user.isEmailVerified) {
-      return res.render("verify-email", {
+      return res.render("auth/verify-email", {
         message: "Your email is already verified. Login here.",
         error: null,
         info: null,
@@ -125,7 +125,7 @@ async function handleResendVerificationEmail(req, res) {
       info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
     });
   } catch (err) {
-    return res.render("verify-email", {
+    return res.render("auth/verify-email", {
       message: null,
       error: err.message,
       info: null,
@@ -138,11 +138,12 @@ async function handleVerifyEmail(req, res) {
     const { token } = req.params;
     await verifyEmail(token);
 
-    return res.render("verify-email-success");
+    return res.render("auth/verify-email-success");
   } catch (err) {
-    return res.render("verify-email", {
+    return res.render("auth/verify-email-success", {
       message: null,
       error: err.message,
+      info: null,
     });
   }
 }
