@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const connectMongoDb = require("./connection");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 
 const urlRouter = require("./routes/url.routes.js");
 const redirectRouter = require("./routes/redirect.routes");
@@ -37,6 +38,7 @@ app.set("views", path.resolve("./views")); // setting views are in views directo
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
+app.use(morgan("dev"));
 app.use(tryAuthenticateUser);
 
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
