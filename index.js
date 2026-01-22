@@ -1,29 +1,34 @@
-require("dotenv").config();
-const express = require("express");
-const connectMongoDb = require("./connection");
-const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
+// require("dotenv").config();
+import "dotenv/config"; // automatically loads .env
+import express from "express";
+import connectMongoDb from "./connection.js";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
+import path from "path";
+// import helmet from "helmet"; // security headers
 
-const urlRouter = require("./routes/url.routes.js");
-const redirectRouter = require("./routes/redirect.routes");
-const staticRouter = require("./routes/static.routes.js");
-const userRouter = require("./routes/user.routes.js");
-const uploadRouter = require("./routes/upload.routes");
-const forgotPasswordRouter = require("./routes/forgotPassword.routes.js")
-const verifyEmailRouter = require("./routes/verifyEmail.routes");
+import urlRouter from "./routes/url.routes.js";
+import redirectRouter from "./routes/redirect.routes.js";
+import staticRouter from "./routes/static.routes.js";
+import userRouter from "./routes/user.routes.js";
+import uploadRouter from "./routes/upload.routes.js";
+import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
+import verifyEmailRouter from "./routes/verifyEmail.routes.js";
 
-const path = require("path");
-const {
+import {
   tryAuthenticateUser,
-  restrictTo,
-} = require("./middlewares/auth.middleware");
+} from "./middlewares/auth.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT;
 
 connectMongoDb(process.env.MONGO_URL)
-  .then(() => console.log("MongoDb Connected"))
-  .catch((err) => console.log("Error Occured", err));
+  .then(() => console.log("MongoDb connected"))
+  .catch((err) => {
+    console.error("MongoDB connection failed:", err);
+    process.exit(1); //process.exit() immediately stops the server.
+    //                The number 1 means exit with an error (0 would mean successful exit).
+  });
 
 app.set("view engine", "ejs"); // setting template engine to ejs to compile ejs files.
 //                               "view engine" is a predefined Express key to set the template engine.

@@ -1,4 +1,4 @@
-async function handleUploadFile(req, res) {
+export async function handleUploadFile(req, res) {
   console.log(req.body);
   console.log(req.file);
 
@@ -10,10 +10,7 @@ async function handleUploadFile(req, res) {
   //   return res.status(400).json({ message: "No file chosen" });
   // }
 
-//   return res.send("File Uploaded Successfully");
+  //   return res.send("File Uploaded Successfully");
   return res.redirect("/upload");
 }
 
-module.exports = {
-  handleUploadFile,
-};

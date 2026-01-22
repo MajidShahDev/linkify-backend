@@ -1,6 +1,6 @@
-const { validationResult } = require("express-validator");
-const { signup, login } = require("../services/user.service"); // adjust path
-const { handleSendVerificationEmail } = require("../controllers/verifyEmail.controller");
+import { validationResult } from "express-validator";
+import { signup, login } from "../services/user.service.js";
+import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
 
 // async function handleUserSignup(req, res) {
 //   const errors = validationResult(req);
@@ -71,7 +71,7 @@ const { handleSendVerificationEmail } = require("../controllers/verifyEmail.cont
 //   }
 // }
 
-async function handleUserSignup(req, res) {
+export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
   // console.log(errors.array());
 
@@ -99,10 +99,10 @@ async function handleUserSignup(req, res) {
     const user = await signup({ name, email, password });
     await handleSendVerificationEmail(user);
     return res.render("verify-email", {
-    message: "Signup successful!",
-    error: null,
-    info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
-  });
+      message: "Signup successful!",
+      error: null,
+      info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
+    });
   } catch (err) {
     return res.status(400).render("signup", {
       errors: {
@@ -116,7 +116,7 @@ async function handleUserSignup(req, res) {
   }
 }
 
-async function handleUserLogin(req, res) {
+export async function handleUserLogin(req, res) {
   const errors = validationResult(req);
 
   // 1️⃣ Validation errors
@@ -156,16 +156,11 @@ async function handleUserLogin(req, res) {
   }
 }
 
-function handleUserLogout(req, res) {
+export function handleUserLogout(req, res) {
   res.clearCookie("token");
   return res.redirect("/login");
 }
 
-module.exports = {
-  handleUserSignup,
-  handleUserLogin,
-  handleUserLogout,
-};
 
 // const bcrypt = require("bcrypt");
 // const User = require("../models/user.model");

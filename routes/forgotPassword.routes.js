@@ -1,6 +1,7 @@
-const express = require("express");
-const { body } = require("express-validator");
-const { handleForgotPassword, handleResetPassword } = require("../controllers/forgotPassword.controller");
+import express from "express";
+import { body } from "express-validator";
+import { handleForgotPassword, handleResetPassword } from "../controllers/forgotPassword.controller.js";
+
 const router = express.Router();
 
 // Forgot password form submission
@@ -21,4 +22,4 @@ router.post(
   handleResetPassword
 );
 
-module.exports = router;
+export default router;
