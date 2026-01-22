@@ -1,11 +1,11 @@
-const nanoId = require("nano-id");
-const URL = require("../models/url.model.js");
+import { nanoid } from "nanoid";
+import URL from "../models/url.model.js";
 
 // Generate a new short URL
-async function generateShortUrl(userId, originalUrl) {
+export async function generateShortUrl(userId, originalUrl) {
   if (!originalUrl) throw new Error("URL is required");
 
-  const shortId = nanoId(8);
+  const shortId = nanoid(8);
 
   const urlEntry = await URL.create({
     shortId,
@@ -18,13 +18,13 @@ async function generateShortUrl(userId, originalUrl) {
 }
 
 // Get URL by shortId and record visit
-async function recordVisit(shortId) {
+export async function recordVisit(shortId) {
   const entry = await URL.findOneAndUpdate(
     { shortId },
     {
       $push: { visitHistory: { timestamp: Date.now() } },
     },
-    { new: true }
+    { new: true },
   );
 
   if (!entry) throw new Error("Short URL not found");
@@ -33,7 +33,7 @@ async function recordVisit(shortId) {
 }
 
 // Get analytics
-async function getAnalytics(shortId) {
+export async function getAnalytics(shortId) {
   const entry = await URL.findOne({ shortId });
   if (!entry) throw new Error("Short URL not found");
 
@@ -44,7 +44,7 @@ async function getAnalytics(shortId) {
 }
 
 // Delete URL
-async function deleteShortUrl(userId, shortId) {
+export async function deleteShortUrl(userId, shortId) {
   const entry = await URL.findOne({ shortId });
   if (!entry) throw new Error("Short URL not found");
 
@@ -57,10 +57,3 @@ async function deleteShortUrl(userId, shortId) {
 
   return shortId;
 }
-
-module.exports = {
-  generateShortUrl,
-  recordVisit,
-  getAnalytics,
-  deleteShortUrl,
-};

@@ -1,8 +1,8 @@
-const express = require("express");
-const { handleRedirectToOrignalURL } = require("../controllers/url.controller");
+import express from "express";
+import { handleRedirectToOrignalURL } from "../controllers/url.controller.js";
 
 const router = express.Router();
 
 router.route("/:shortId").get(handleRedirectToOrignalURL);
 
-module.exports = router;
+export default router;

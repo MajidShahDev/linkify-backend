@@ -1,11 +1,13 @@
-const express = require("express");
-const { body } = require("express-validator");
-const {
+import express from "express";
+import { body } from "express-validator";
+import {
   handleGenerateNewShortUrl,
   handleGetAnalytics,
   handleDeleteShortUrl,
-} = require("../controllers/url.controller");
+} from "../controllers/url.controller.js";
+
 const router = express.Router();
+
 
 
 router.post(
@@ -25,4 +27,4 @@ router.get("/analytics/:shortId", handleGetAnalytics);
 router.delete("/:shortId", handleDeleteShortUrl);
 
 
-module.exports = router;
+export default router;

@@ -1,8 +1,8 @@
-const express = require("express");
-// const {} = require("../controllers/url");
-const URL = require("../models/url.model");
-const { restrictTo } = require("../middlewares/auth.middleware");
-const { resetPasswordTokenRequired } = require("../middlewares/tokenRequired.middleware");
+import express from "express";
+import URL from "../models/url.model.js";
+import { restrictTo } from "../middlewares/auth.middleware.js";
+import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
+
 
 const router = express.Router();
 
@@ -71,4 +71,4 @@ router.get("/upload", async (req, res) => {
   return res.render("upload");
 });
 
-module.exports = router;
+export default router;

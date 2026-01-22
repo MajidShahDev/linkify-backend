@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const urlSchema = new mongoose.Schema(
   {
@@ -20,7 +20,7 @@ const urlSchema = new mongoose.Schema(
     ],
     createdBy: {
       type: mongoose.Schema.ObjectId, // Type is Id of User(mean which user generated url);
-      ref: 'users', // now this id reference to users collection.
+      ref: "users", // now this id reference to users collection.
     }
   },
   { timestamps: true }
@@ -28,4 +28,4 @@ const urlSchema = new mongoose.Schema(
 
 const URL = mongoose.model("URL", urlSchema);
 
-module.exports = URL;
+export default URL;

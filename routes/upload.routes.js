@@ -1,7 +1,9 @@
-const express = require("express");
+import express from "express";
+import multer from "multer";
+import { handleUploadFile } from "../controllers/upload.js";
+
 const router = express.Router();
-const multer = require("multer");
-const { handleUploadFile } = require("../controllers/upload");
+
 
 // const upload = multer({ dest: "uploads" }); // front-end c user jo b file upload kry ga, upload folder mn jay ge.
 //                                             // upload is multer instance to create a middlewhere
@@ -22,4 +24,4 @@ const upload = multer({ storage: storage });
 //
 router.post("/file", upload.single("profile-image"), handleUploadFile);
 
-module.exports = router;
+export default router;

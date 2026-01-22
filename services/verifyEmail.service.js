@@ -1,10 +1,11 @@
 // services/verifyEmail.service.js
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
-const User = require("../models/user.model");
+import crypto from "crypto";
+import nodemailer from "nodemailer";
+import User from "../models/user.model.js";
+
 
 // generate token + save
-async function generateEmailVerificationToken(userId) {
+export async function generateEmailVerificationToken(userId) {
   const token = crypto.randomBytes(32).toString("hex");
 
   const user = await User.findById(userId);
@@ -18,7 +19,7 @@ async function generateEmailVerificationToken(userId) {
 }
 
 // send email
-async function sendVerificationEmail(email, token) {
+export async function sendVerificationEmail(email, token) {
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -44,7 +45,7 @@ async function sendVerificationEmail(email, token) {
 }
 
 // verify token
-async function verifyEmail(token) {
+export async function verifyEmail(token) {
   const user = await User.findOne({
     emailVerificationToken: token,
     emailVerificationExpires: { $gt: Date.now() },
@@ -60,8 +61,3 @@ async function verifyEmail(token) {
   return user;
 }
 
-module.exports = {
-  generateEmailVerificationToken,
-  sendVerificationEmail,
-  verifyEmail,
-};

@@ -1,15 +1,21 @@
 {
   "name": "linkify-backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
+  "description": "A production-ready URL shortening backend with authentication, role-based access, analytics, and secure deployment.",
+  "author": "Majid Shah",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "lint": "eslint . --ext .js,.mjs",
+    "lint:fix": "eslint . --ext .js,.mjs --fix"
   },
-  "author": "Majid Shah",
-  "license": "ISC",
-  "description": "A production-ready URL shortening backend with authentication, role-based access, analytics, and secure deployment.",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
@@ -21,10 +27,13 @@
     "mongoose": "^8.20.2",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "nano-id": "^1.1.0",
+    "nanoid": "^5.1.6",
     "nodemailer": "^7.0.12"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
     "nodemon": "^3.1.11"
   }
 }
