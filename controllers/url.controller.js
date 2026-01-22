@@ -1,10 +1,10 @@
-const { validationResult } = require("express-validator");
-const {
+import { validationResult } from "express-validator";
+import {
   generateShortUrl,
   recordVisit,
   getAnalytics,
   deleteShortUrl,
-} = require("../services/url.service.js"); // adjust path
+} from "../services/url.service.js"; // adjust path
 
 // Generate a new short URL and render home
 // async function handleGenerateNewShortUrl(req, res) {
@@ -18,34 +18,33 @@ const {
 //   }
 // }
 
-async function handleGenerateNewShortUrl(req, res) {
+export async function handleGenerateNewShortUrl(req, res) {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).render("home", {
-      errors: errors.array().map(err => err.msg), // array of messages
-      oldInput: { url: req.body.url }             // keep the input filled
+      errors: errors.array().map((err) => err.msg), // array of messages
+      oldInput: { url: req.body.url }, // keep the input filled
     });
   }
 
   try {
     const urlEntry = await generateShortUrl(req.user._id, req.body.url);
-    return res.render("home", { 
+    return res.render("home", {
       id: urlEntry.shortId,
-      errors: {},          // always define errors
-      oldInput: {}         // optional, empty after success
+      errors: {}, // always define errors
+      oldInput: {}, // optional, empty after success
     });
   } catch (err) {
     return res.status(400).render("home", {
       errors: [err.message],
-      oldInput: { url: req.body.url }
+      oldInput: { url: req.body.url },
     });
   }
 }
 
-
 // Redirect to original URL
-async function handleRedirectToOrignalURL(req, res) {
+export async function handleRedirectToOrignalURL(req, res) {
   try {
     const entry = await recordVisit(req.params.shortId);
     return res.redirect(entry.redirectURL);
@@ -56,7 +55,7 @@ async function handleRedirectToOrignalURL(req, res) {
 }
 
 // Get analytics
-async function handleGetAnalytics(req, res) {
+export async function handleGetAnalytics(req, res) {
   try {
     const analytics = await getAnalytics(req.params.shortId);
     return res.json(analytics);
@@ -67,7 +66,7 @@ async function handleGetAnalytics(req, res) {
 }
 
 // Delete URL
-async function handleDeleteShortUrl(req, res) {
+export async function handleDeleteShortUrl(req, res) {
   try {
     const shortId = await deleteShortUrl(req.user._id, req.params.shortId);
     return res.json({ message: "Short URL deleted successfully", shortId });
@@ -77,13 +76,6 @@ async function handleDeleteShortUrl(req, res) {
     return res.status(status).json({ error: err.message });
   }
 }
-
-module.exports = {
-  handleGenerateNewShortUrl,
-  handleRedirectToOrignalURL,
-  handleGetAnalytics,
-  handleDeleteShortUrl,
-};
 
 // const nanoId = require("nano-id");
 // const URL = require("../models/url.model.js");

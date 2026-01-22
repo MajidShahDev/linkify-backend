@@ -1,9 +1,10 @@
-const bcrypt = require("bcrypt");
-const User = require("../models/user.model");
-const { setUser } = require("./auth.service"); // adjust path
+import bcrypt from "bcrypt";
+import User from "../models/user.model.js";
+import { setUser } from "./auth.service.js"; // adjust path
+
 
 // Signup logic
-async function signup({ name, email, password }) {
+export async function signup({ name, email, password }) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error("User with this email already exists");
@@ -21,7 +22,7 @@ async function signup({ name, email, password }) {
 }
 
 // Login logic
-async function login({ email, password }) {
+export async function login({ email, password }) {
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error("Invalid email or password");
@@ -36,7 +37,3 @@ async function login({ email, password }) {
   return { user, token };
 }
 
-module.exports = {
-  signup,
-  login,
-};

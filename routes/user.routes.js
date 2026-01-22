@@ -1,7 +1,9 @@
-const express = require("express");
-const { body } = require("express-validator");
-const {handleUserSignup, handleUserLogin, handleUserLogout} = require('../controllers/user.controller');
+import express from "express";
+import { body } from "express-validator";
+import { handleUserSignup, handleUserLogin, handleUserLogout } from "../controllers/user.controller.js";
+
 const router = express.Router();
+
 
 router.post(
   "/signup",
@@ -22,7 +24,7 @@ router.post(
 );
 
 router.post(
-  '/login',
+  "/login",
   [
     body("email")
       .notEmpty().withMessage("Email is required")
@@ -34,6 +36,6 @@ router.post(
   handleUserLogin
 );
 
-router.get('/logout', handleUserLogout);
+router.get("/logout", handleUserLogout);
 
-module.exports = router;
+export default router;

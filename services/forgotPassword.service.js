@@ -1,9 +1,10 @@
-const crypto = require("crypto");
-const User = require("../models/user.model");
-const nodemailer = require("nodemailer"); // for sending emails
+import crypto from "crypto";
+import User from "../models/user.model.js";
+import nodemailer from "nodemailer"; // for sending emails
+
 
 // Generate reset token and save expiry
-async function generateResetToken(email) {
+export async function generateResetToken(email) {
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error("No user found with this email");
@@ -22,7 +23,7 @@ async function generateResetToken(email) {
 }
 
 // Send reset email
-async function sendResetEmail(email, token) {
+export async function sendResetEmail(email, token) {
   // configure nodemailer (use your SMTP config)
   
   const transporter = nodemailer.createTransport({
@@ -35,7 +36,7 @@ async function sendResetEmail(email, token) {
     },
   });
   
-   transporter.verify((error, success) => {
+  transporter.verify((error) => {
     if (error) console.log(error);
     else console.log("SMTP server ready to send emails");
   });
@@ -53,7 +54,7 @@ async function sendResetEmail(email, token) {
 }
 
 // Reset password function
-async function resetPassword(token, newPassword) {
+export async function resetPassword(token, newPassword) {
   const user = await User.findOne({
     resetPasswordToken: token,
     resetPasswordExpires: { $gt: Date.now() }, // check if token is not expired
@@ -71,9 +72,3 @@ async function resetPassword(token, newPassword) {
   await user.save();
   return user;
 }
-
-module.exports = {
-  generateResetToken,
-  sendResetEmail,
-  resetPassword,
-};

@@ -1,7 +1,7 @@
 // middlewares/tokenRequired.js
-const User = require("../models/user.model");
+import User from "../models/user.model.js";
 
-async function resetPasswordTokenRequired(req, res, next) {
+export async function resetPasswordTokenRequired(req, res, next) {
   const { token } = req.params; // or req.query.token
 
   if (!token) {
@@ -23,4 +23,3 @@ async function resetPasswordTokenRequired(req, res, next) {
 }
 
 
-module.exports = { resetPasswordTokenRequired };

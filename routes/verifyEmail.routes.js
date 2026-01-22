@@ -1,10 +1,11 @@
 // routes/verifyEmail.routes.js
-const express = require("express");
-const {
+import express from "express";
+import {
   handleSendVerificationEmail,
   handleVerifyEmail,
   handleResendVerificationEmail,
-} = require("../controllers/verifyEmail.controller");
+} from "../controllers/verifyEmail.controller.js";
+
 
 const router = express.Router();
 
@@ -15,4 +16,4 @@ router.post("/resend-verification", handleResendVerificationEmail);
 // verify email via token
 router.get("/verify-email/:token", handleVerifyEmail);
 
-module.exports = router;
+export default router;

@@ -1,13 +1,14 @@
-const { validationResult } = require("express-validator");
-const {
+// const { validationResult } = require("express-validator");
+import { validationResult } from "express-validator";
+import {
   generateResetToken,
   sendResetEmail,
   resetPassword,
-} = require("../services/forgotPassword.service");
-const bcrypt = require("bcrypt");
+} from "../services/forgotPassword.service.js";
+import bcrypt from "bcrypt";
 
 // Handle forgot password request
-async function handleForgotPassword(req, res) {
+export async function handleForgotPassword(req, res) {
   // validationResult(req) returns a Big Result object
   // Inside it, there’s a property called errors which is an array
   // .array() is a method of Result that simply returns this internal errors array
@@ -58,9 +59,9 @@ async function handleForgotPassword(req, res) {
 }
 
 // Handle reset password request
-async function handleResetPassword(req, res) {
+export async function handleResetPassword(req, res) {
   const errors = validationResult(req);
-   const { token } = req.params;
+  const { token } = req.params;
 
   // 1️⃣ Handle validation errors
   if (!errors.isEmpty()) {
@@ -98,33 +99,27 @@ async function handleResetPassword(req, res) {
 }
 
 
-
-module.exports = {
-  handleForgotPassword,
-  handleResetPassword,
-};
-
 // Good code doesn’t only solve today’s UI —
-  // it prepares for tomorrow’s requirements.
+// it prepares for tomorrow’s requirements.
 
-  // Why UI usually shows only ONE error
-  // UX reason (very important)
-  // Showing all errors at time: Email is required, Email must be valid, Email already exists
-  // Feels: noisy, stressful, confusing
-  // User fixes one thing at a time, Feels: clear, actionable, calm
+// Why UI usually shows only ONE error
+// UX reason (very important)
+// Showing all errors at time: Email is required, Email must be valid, Email already exists
+// Feels: noisy, stressful, confusing
+// User fixes one thing at a time, Feels: clear, actionable, calm
 
-  // ❌ Wasted time = memorizing syntax (Syntax is: Google-able, auto-completed by IDE, forgettable)
-  // ✅ Valuable time = understanding WHY
+// ❌ Wasted time = memorizing syntax (Syntax is: Google-able, auto-completed by IDE, forgettable)
+// ✅ Valuable time = understanding WHY
 
-  // Memorizing syntax = memorizing traffic signs (You pass exams, but panic on real roads.)
-  // Understanding flow = understanding traffic (You can drive anywhere, even if signs change.)
+// Memorizing syntax = memorizing traffic signs (You pass exams, but panic on real roads.)
+// Understanding flow = understanding traffic (You can drive anywhere, even if signs change.)
 
-  // Syntax makes code run.
-  // Understanding makes you a developer.
+// Syntax makes code run.
+// Understanding makes you a developer.
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  // PRG Pattern (Post → Redirect → Get)
-  //
+////////////////////////////////////////////////////////////////////////////////////////////////
+// PRG Pattern (Post → Redirect → Get)
+//
 // After a successful POST request:
 //   ✔️ Always redirect to another GET route
 //   ❌ Never render a page directly
@@ -135,4 +130,4 @@ module.exports = {
 // ✔️ Success → res.redirect()
 // ✔️ Error   → res.render()
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////

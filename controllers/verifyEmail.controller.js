@@ -1,11 +1,13 @@
-const User = require("../models/user.model");
+// const User = require("../models/user.model");
+import User from "../models/user.model.js";
+
 
 // controllers/verifyEmail.controller.js
-const {
+import {
   generateEmailVerificationToken,
   sendVerificationEmail,
   verifyEmail,
-} = require("../services/verifyEmail.service");
+} from "../services/verifyEmail.service.js";
 
 // send verification email
 // async function handleSendVerificationEmail(req, res) {
@@ -25,7 +27,7 @@ const {
 //     });
 //   }
 // }
-async function handleSendVerificationEmail(reqOrUser, res = null) {
+export async function handleSendVerificationEmail(reqOrUser, res = null) {
   try {
     // Determine if called from signup (user object) or route (req)
     let user;
@@ -101,7 +103,7 @@ async function handleSendVerificationEmail(reqOrUser, res = null) {
 
 // verify email via link
 
-async function handleResendVerificationEmail(req, res) {
+export async function handleResendVerificationEmail(req, res) {
   try {
     // ✅ Fetch latest user from DB
     const user = await User.findById(req.user._id);
@@ -133,7 +135,7 @@ async function handleResendVerificationEmail(req, res) {
   }
 }
 
-async function handleVerifyEmail(req, res) {
+export async function handleVerifyEmail(req, res) {
   try {
     const { token } = req.params;
     await verifyEmail(token);
@@ -148,8 +150,4 @@ async function handleVerifyEmail(req, res) {
   }
 }
 
-module.exports = {
-  handleSendVerificationEmail,
-  handleResendVerificationEmail,
-  handleVerifyEmail,
-};
+

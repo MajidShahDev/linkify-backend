@@ -1,9 +1,9 @@
-const { getUser } = require("../services/auth.service");
+import { getUser } from "../services/auth.service.js";
 
 // reads token → loads user → attaches to req
 // tryAuthenticateUser
 
-function tryAuthenticateUser(req, res, next) {
+export function tryAuthenticateUser(req, res, next) {
   const userToken = req.cookies?.token;
   req.user = null; // This ensures that if there is no token or invalid token, req.user is always defined.
   if (!userToken) return next();
@@ -12,18 +12,13 @@ function tryAuthenticateUser(req, res, next) {
   return next();
 }
 
-function restrictTo(roles = ["NORMAL", "ADMIN"]) {
+export function restrictTo(roles = ["NORMAL", "ADMIN"]) {
   return function (req, res, next) {
     if (!req.user) return res.redirect("/login");
     if (!roles.includes(req.user.role)) return res.end("UnAuthorized");
     return next();
   };
 }
-
-module.exports = {
-  tryAuthenticateUser,
-  restrictTo,
-};
 
 //////////////////////////////////////////////////////////////////////////
 // deserializeUser = “Convert stored auth data (token/session) back into a usable user object for this request.”
