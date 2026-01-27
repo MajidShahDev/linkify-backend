@@ -57,3 +57,22 @@ export async function deleteShortUrl(userId, shortId) {
 
   return shortId;
 }
+
+// Edit original URL
+export async function editOriginalUrl(userId, shortId, newUrl) {
+  if (!newUrl) throw new Error("New URL is required");
+
+  const entry = await URL.findOne({ shortId });
+  if (!entry) throw new Error("Short URL not found");
+
+  // Only creator can edit
+  if (entry.createdBy.toString() !== userId.toString()) {
+    throw new Error("You are not allowed to edit this URL");
+  }
+
+  entry.redirectURL = newUrl;
+  await entry.save();
+
+  return entry;
+}
+

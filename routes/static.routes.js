@@ -3,7 +3,6 @@ import URL from "../models/url.model.js";
 import { restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 
-
 const router = express.Router();
 
 // router.route("/").get(handleRedirectToOrignalURL);
@@ -19,7 +18,6 @@ router.get("/login", async (req, res) => {
   return res.render("auth/login", {
     errors: {},
     oldInput: {},
-    
   });
 });
 router.get("/forgot-password", async (req, res) => {
@@ -29,7 +27,6 @@ router.get("/forgot-password", async (req, res) => {
     oldInput: {},
   });
 });
-
 
 // Show reset password form
 router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
@@ -59,8 +56,31 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
 
 router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
   // if(!req.user) return res.redirect('/login');
-  const allUrls = await URL.find({ createdBy: req.user._id });
+  const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+  const allUrls = await URL.find({ createdBy: req.user._id }).sort({
+    createdAt: -1,
+  });
   return res.render("home", {
+    urls: allUrls,
+    id: req.query.created || null, // last created shortId
+    errors: {},
+    oldInput: {},
+    baseUrl,
+  });
+});
+
+router.get("/create-link", async (req, res) => {
+  return res.render("create-link", {
+    message: null,
+    errors: null,
+    oldInput: {},
+  });
+});
+
+router.get("/links", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+  // if(!req.user) return res.redirect('/login');
+  const allUrls = await URL.find({ createdBy: req.user._id });
+  return res.render("links", {
     urls: allUrls,
     errors: {},
     oldInput: {},
