@@ -1,0 +1,486 @@
+<!-- Template Engine 
+     A template engine is a software component that allows developers
+     to embed programming logic (like loops, conditions, and variables)
+     into HTML templates, and then render dynamic HTML pages by combining 
+     these templates with data.
+     
+     Example Template Engine (like EJS)
+     Combines HTML templates + data to generate static HTML on the server.
+     Example: < %= user.name % >  → replaced with actual data, sent as final HTML.
+     Mostly server-side rendering. -->
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkify</title>
+    <!-- <link rel="stylesheet" href="/css/output.css"> -->
+    <!-- npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/output.css --watch -->
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .generated {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e9f5ff;
+            border-left: 4px solid #007bff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        table thead tr {
+            background-color: #f1f1f1;
+        }
+
+
+        table tbody tr {
+            vertical-align: top;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+        }
+
+        .logout-btn:hover {
+            background-color: #b52a37;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-actions button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .danger {
+            /* background: #e53935; */
+            color: white;
+            border: none;
+        }
+
+        .danger:hover {
+            background: #e53935;
+        }
+
+        .linkify-heading {
+            text-decoration: none;
+        }
+
+        .linkify-heading:hover {
+            text-decoration: none;
+        }
+
+        .baseUrl {
+            text-decoration: none;
+            /* color: black; */
+        }
+
+        .arrow-right {
+            opacity: 0.5;
+            padding-left: 0;
+            padding-right: 8px;
+        }
+
+        .redirectURL {
+            max-width: 300px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+        }
+
+
+        .editIcon,
+        .copyIcon,
+        .deleteIcon {
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            cursor: pointer;
+            opacity: 0.7;
+            vertical-align: middle;
+        }
+
+        .editIcon:hover,
+        .copyIcon:hover,
+        .deleteIcon:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        .editIcon,
+        .copyIcon {
+            padding-right: 4px;
+        }
+
+
+
+        .deleteIcon {
+            position: relative;
+            left: 10px;
+        }
+
+        .clicks,
+        .clicks-heading {
+            text-align: center;
+        }
+
+        .short-link,
+        .redirect-url {
+            padding-left: 40px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <a href="/" class="linkify-heading">
+                <h1>Linkify</h1>
+            </a>
+            <form action="/user/logout" method="get">
+                <button class="logout-btn" type="submit">Logout</button>
+            </form>
+        </header>
+
+        <% if (locals.id) { %>
+            <div class="generated">
+                URL Generated:
+                <a href="<%= baseUrl %>/<%= id %>" target="_blank">
+                    <%= baseUrl %>/<%= id %>
+                </a>
+            </div>
+            <% } %>
+
+                <!-- <form method="post" action="/url">
+                    <label>
+                        Enter Your Original URL
+                        <input type="text" name="url" placeholder="https://example.com" required>
+                    </label>
+                    <br><br>
+                    <button type="submit">Generate</button>
+                </form> -->
+
+                <form method="post" action="/url">
+                    <label>
+                        Enter/Paste Your Original Long URL
+                        <input type="text" name="url" placeholder="https://example.com/long-url"
+                            value="<%= oldInput ? oldInput.url : '' %>" required>
+                    </label>
+
+                    <% if (errors && errors.length> 0) { %>
+                        <ul style="color:red">
+                            <% errors.forEach(msg=> { %>
+                                <li>
+                                    <%= msg %>
+                                </li>
+                                <% }) %>
+                        </ul>
+                        <% } %>
+
+                            <br><br>
+                            <button type="submit">Generate Short Link</button>
+                </form>
+
+                <% if (locals.urls) { %>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th class="short-link">Short Link</th>
+                                <th></th>
+                                <th class="redirect-url">Redirect URL</th>
+                                <th class="clicks-heading">Clicks</th>
+                                <!-- <th>Link</th> -->
+                                <th>Action</th> <!-- New column -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% urls.forEach((url, index)=> { %>
+                                <tr>
+                                    <td>
+                                        <%= index + 1 %>
+                                    </td>
+                                    <td class="">
+                                        <img src="/images/copy.svg" class="copyIcon"
+                                            data-url="<%= baseUrl %>/<%= url.shortId %>" width="20" height="20"
+                                            alt="Copy URL" />
+                                        <a href="<%= baseUrl %>/<%= url.shortId %>" class="baseUrl" target="_blank">
+                                            <%= baseUrl %>/<%= url.shortId %>
+                                        </a>
+                                    </td>
+
+                                    <td class="arrow-right">→</td>
+
+                                    <td class="redirectURL">
+                                        <img src="/images/edit.svg" class="editIcon" width="20" height="20"
+                                            alt="Edit URL" title="Edit"
+                                            onclick="openEditModal('<%= url.shortId %>', '<%= url.redirectURL %>')" />
+
+                                        <%= url.redirectURL %>
+                                    </td>
+                                    <td class="clicks">
+                                        <%= url.visitHistory.length %>
+                                    </td>
+                                    <!-- <td>
+                                        <a href="<%= baseUrl %>/<%= url.shortId %>" target="_blank">Visit</a>
+                                    </td> -->
+                                    <td>
+                                        <!-- <button
+                                            onclick="openEditModal('<%= url.shortId %>', '<%= url.redirectURL %>')">Edit</button> -->
+                                        <!-- <button onclick="openDeleteModal('<%= url.shortId %>')">Delete</button> -->
+                                        <img src="/images/trash.svg" class="deleteIcon" width="20" height="20"
+                                            alt="Delete URL" title="Delete"
+                                            onclick="openDeleteModal('<%= url.shortId %>')" />
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                    <% } %>
+
+                        <div id="editModal" class="modal hidden">
+                            <div class="modal-box">
+                                <h3>Edit URL</h3>
+                                <p>Update the original URL:</p>
+                                <input type="text" id="editUrlInput" class="input" placeholder="Enter new URL" />
+
+                                <div class="modal-actions">
+                                    <button id="cancelEdit">Cancel</button>
+                                    <button id="confirmEdit" class="primary">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deleteModal" class="modal hidden">
+                            <div class="modal-box">
+                                <h3>Delete URL</h3>
+                                <p>Are you sure you want to delete this URL?</p>
+
+                                <div class="modal-actions">
+                                    <button id="cancelDelete">Cancel</button>
+                                    <button id="confirmDelete" class="danger">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+    </div>
+
+
+</body>
+
+<script>
+    let editTargetId = null;
+
+    function openEditModal(shortId, currentUrl) {
+        editTargetId = shortId;
+        document.getElementById("editUrlInput").value = currentUrl;
+        document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+        editTargetId = null;
+        document.getElementById("editModal").classList.add("hidden");
+    }
+
+    // Cancel button
+    document.getElementById("cancelEdit").onclick = closeEditModal;
+
+    // Save button
+    document.getElementById("confirmEdit").onclick = async function () {
+        if (!editTargetId) return;
+
+        const newUrl = document.getElementById("editUrlInput").value.trim();
+        if (!newUrl) {
+            alert("URL cannot be empty");
+            return;
+        }
+
+        const res = await fetch(`/url/${editTargetId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ newUrl }),
+        });
+
+        if (res.ok) {
+            closeEditModal();
+            location.reload();
+        } else {
+            const data = await res.json();
+            alert(data.error || "Failed to update");
+        }
+    };
+
+
+
+    let deleteTargetId = null;
+
+    function openDeleteModal(shortId) {
+        deleteTargetId = shortId;
+        document.getElementById("deleteModal").classList.remove("hidden");
+    }
+
+    function closeDeleteModal() {
+        deleteTargetId = null;
+        document.getElementById("deleteModal").classList.add("hidden");
+    }
+
+    document.getElementById("cancelDelete").onclick = closeDeleteModal;
+
+    document.getElementById("confirmDelete").onclick = async function () {
+        if (!deleteTargetId) return;
+
+        const res = await fetch(`/url/${deleteTargetId}`, {
+            method: "DELETE",
+        });
+
+        if (res.ok) {
+            closeDeleteModal();
+            location.reload();
+        } else {
+            const data = await res.json();
+            alert(data.error || "Failed to delete");
+        }
+    };
+
+
+    document.querySelectorAll(".copyIcon").forEach(icon => {
+        icon.addEventListener("click", () => {
+            const url = icon.dataset.url;
+
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    // Change color using filter
+                    icon.style.opacity = "0.5"; // bright greenish effect
+                    setTimeout(() => {
+                        icon.style.opacity = "0.7"; // revert back
+                    }, 1000);
+                })
+                .catch(err => {
+                    console.error("Failed to copy: ", err);
+                    alert("Failed to copy URL");
+                });
+        });
+    });
+
+
+</script>
+
+
+
+
+</html>
+
+

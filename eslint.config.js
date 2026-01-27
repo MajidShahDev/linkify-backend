@@ -10,22 +10,32 @@ export default [
       ecmaVersion: 2021,
       sourceType: "module",
       globals: {
-        ...globals.node
-      }
+        ...globals.node,
+      },
     },
     rules: {
       "no-console": "off",
       "no-unused-vars": "warn",
-      "eqeqeq": 'error' // Enforces strict equality (===)
-    }
-  }
+      eqeqeq: "error", // Enforces strict equality (===)
+    },
+  },
 ];
-
 
 // npx eslint .            // Check your project files for showing warining/errors
 // npx eslint . --fix      // Fix errors automatically if possible
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// .prettierrc.js
+// export default {
+//   semi: true,           // add semicolons
+//   singleQuote: false,   // use double quotes
+//   tabWidth: 2,          // 2-space indentation
+//   trailingComma: "es5", // Trailing commas only in arrays and objects, not in functions, backward support
+//   endOfLine: "lf"       // consistent LF line endings
+// };
+
+//   trailingComma: "all", // Trailing commas only in arrays, objects and also functions for modern JS.
 // endOfLine: "lf" tells Prettier to use LF (\n) at the end of every line.
 // It solves Git diff and OS inconsistency problems by making line endings the same on Windows, macOS, and Linux.
 // This keeps your code clean, consistent, and portable across all environments.

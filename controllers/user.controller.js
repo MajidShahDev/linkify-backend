@@ -161,7 +161,6 @@ export function handleUserLogout(req, res) {
   return res.redirect("/login");
 }
 
-
 // const bcrypt = require("bcrypt");
 // const User = require("../models/user.model");
 // const { setUser } = require("../service/auth.service");

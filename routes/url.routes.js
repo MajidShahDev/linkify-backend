@@ -4,8 +4,10 @@ import {
   handleGenerateNewShortUrl,
   handleGetAnalytics,
   handleDeleteShortUrl,
+  handleEditOriginalUrl,
 } from "../controllers/url.controller.js";
 
+// fdsfdsdsfdsfdsfds
 const router = express.Router();
 
 
@@ -25,6 +27,7 @@ router.post(
 // router.post("/", handleGenerateNewShortUrl);
 router.get("/analytics/:shortId", handleGetAnalytics);
 router.delete("/:shortId", handleDeleteShortUrl);
+router.put("/:shortId", handleEditOriginalUrl);
 
 
 export default router;
