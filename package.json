@@ -17,6 +17,7 @@
     "lint:fix": "eslint . --ext .js,.mjs --fix"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
@@ -25,15 +26,16 @@
     "express-validator": "^7.3.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.20.2",
-    "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "nanoid": "^5.1.6",
-    "nodemailer": "^7.0.12"
+    "nodemailer": "^7.0.12",
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
+    "morgan": "^1.10.1",
     "nodemon": "^3.1.11"
   }
 }

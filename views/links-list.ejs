@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkify - My Links</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            border: none;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #b52a37;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        table th {
+            background-color: #f1f1f1;
+        }
+
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-actions button {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .danger {
+            background: #e53935;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>My Links</h1>
+            <form action="/user/logout" method="get">
+                <button class="logout-btn" type="submit">Logout</button>
+            </form>
+        </header>
+
+        <% if (locals.urls) { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Short Id</th>
+                        <th>Redirect URL</th>
+                        <th>Clicks</th>
+                        <th>Link</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% urls.forEach((url, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= url.shortId %></td>
+                            <td><%= url.redirectURL %></td>
+                            <td><%= url.visitHistory.length %></td>
+                            <td><a href="http://localhost:8081/<%= url.shortId %>" target="_blank">Visit</a></td>
+                            <td>
+                                <button onclick="openDeleteModal('<%= url.shortId %>')">Delete</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No links generated yet. <a href="/">Create one now</a></p>
+        <% } %>
+
+        <!-- Delete Modal -->
+        <div id="deleteModal" class="modal hidden">
+            <div class="modal-box">
+                <h3>Delete URL</h3>
+                <p>Are you sure you want to delete this URL?</p>
+                <div class="modal-actions">
+                    <button id="cancelDelete">Cancel</button>
+                    <button id="confirmDelete" class="danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deleteTargetId = null;
+
+        function openDeleteModal(shortId) {
+            deleteTargetId = shortId;
+            document.getElementById("deleteModal").classList.remove("hidden");
+        }
+
+        function closeDeleteModal() {
+            deleteTargetId = null;
+            document.getElementById("deleteModal").classList.add("hidden");
+        }
+
+        document.getElementById("cancelDelete").onclick = closeDeleteModal;
+
+        document.getElementById("confirmDelete").onclick = async function () {
+            if (!deleteTargetId) return;
+
+            const res = await fetch(`/url/${deleteTargetId}`, {
+                method: "DELETE",
+            });
+
+            if (res.ok) {
+                closeDeleteModal();
+                location.reload();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete");
+            }
+        };
+    </script>
+</body>
+
+</html>

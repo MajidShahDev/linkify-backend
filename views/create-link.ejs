@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Link</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 18px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .generated {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9f5ff;
+            border-left: 4px solid #007bff;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Create Short URL</h1>
+
+        <% if (locals.id) { %>
+            <div class="generated">
+                Generated URL:
+                <a href="http://localhost:8081/<%= id %>" target="_blank">
+                    http://localhost:8081/<%= id %>
+                </a>
+            </div>
+        <% } %>
+
+        <form method="post" action="/url">
+            <label>
+                Enter Original URL
+                <input type="text" name="url"
+                    value="<%= oldInput ? oldInput.url : '' %>"
+                    placeholder="https://example.com"
+                    required />
+            </label>
+
+            <% if (errors && errors.length > 0) { %>
+                <ul style="color:red">
+                    <% errors.forEach(err => { %>
+                        <li><%= err %></li>
+                    <% }) %>
+                </ul>
+            <% } %>
+
+            <button type="submit">Generate</button>
+        </form>
+
+        <br />
+        <a href="/dashboard">Go to Link List →</a>
+    </div>
+</body>
+
+</html>

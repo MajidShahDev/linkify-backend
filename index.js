@@ -5,6 +5,7 @@ import connectMongoDb from "./connection.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import path from "path";
+
 // import helmet from "helmet"; // security headers
 
 import urlRouter from "./routes/url.routes.js";
@@ -45,6 +46,7 @@ app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(tryAuthenticateUser);
+app.use(express.static("public"));
 
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
 app.use("/user", userRouter); // route handle user login(post) and sign up(post)

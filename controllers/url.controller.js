@@ -1,9 +1,11 @@
 import { validationResult } from "express-validator";
+import URL from "../models/url.model.js";
 import {
   generateShortUrl,
   recordVisit,
   getAnalytics,
   deleteShortUrl,
+  editOriginalUrl
 } from "../services/url.service.js"; // adjust path
 
 // Generate a new short URL and render home
@@ -18,27 +20,55 @@ import {
 //   }
 // }
 
+// export async function handleGenerateNewShortUrl(req, res) {
+//   const errors = validationResult(req);
+//   const allUrls = await URL.find({ createdBy: req.user._id });
+//   if (!errors.isEmpty()) {
+//     return res.status(400).render("home", {
+//       errors: errors.array().map((err) => err.msg), // array of messages
+//       oldInput: { url: req.body.url }, // keep the input filled
+//     });
+//   }
+
+//   try {
+//     const urlEntry = await generateShortUrl(req.user._id, req.body.url);
+//     return res.render("home", {
+//       urls: allUrls,
+//       id: urlEntry.shortId,
+//       errors: {}, // always define errors
+//       oldInput: {}, // optional, empty after success
+//     });
+//   } catch (err) {
+//     return res.status(400).render("home", {
+//       errors: [err.message],
+//       oldInput: { url: req.body.url },
+//     });
+//   }
+// }
+
 export async function handleGenerateNewShortUrl(req, res) {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).render("home", {
-      errors: errors.array().map((err) => err.msg), // array of messages
-      oldInput: { url: req.body.url }, // keep the input filled
+      errors: errors.array().map(err => err.msg),
+      oldInput: { url: req.body.url },
+      urls: await URL.find({ createdBy: req.user._id }),
     });
   }
 
   try {
     const urlEntry = await generateShortUrl(req.user._id, req.body.url);
-    return res.render("home", {
-      id: urlEntry.shortId,
-      errors: {}, // always define errors
-      oldInput: {}, // optional, empty after success
-    });
+
+    // PRG
+    return res.redirect("/?created=" + urlEntry.shortId);
+    // ?created=shortid // short id is passed as query parameter
+
   } catch (err) {
     return res.status(400).render("home", {
       errors: [err.message],
       oldInput: { url: req.body.url },
+      urls: await URL.find({ createdBy: req.user._id }),
     });
   }
 }
@@ -76,6 +106,23 @@ export async function handleDeleteShortUrl(req, res) {
     return res.status(status).json({ error: err.message });
   }
 }
+
+
+
+export async function handleEditOriginalUrl(req, res) {
+  const { shortId } = req.params;
+  const { newUrl } = req.body;
+
+  try {
+    const updatedEntry = await editOriginalUrl(req.user._id, shortId, newUrl);
+    return res.json({ message: "URL updated successfully", updatedEntry });
+  } catch (err) {
+    console.error(err.message);
+    const status = err.message.includes("allowed") ? 403 : 404;
+    return res.status(status).json({ error: err.message });
+  }
+}
+
 
 // const nanoId = require("nano-id");
 // const URL = require("../models/url.model.js");
