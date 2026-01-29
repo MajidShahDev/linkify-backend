@@ -13,15 +13,17 @@ const urlSchema = new mongoose.Schema(
     },
     visitHistory: [
       {
-        timestamp: {
-          type: Date,
-        },
+        timestamp: { type: Date },
+        ipAddress: { type: String },
+        location: { type: String },
+        userAgent: { type: String },
+        referrer: { type: String },
       },
     ],
     createdBy: {
       type: mongoose.Schema.ObjectId, // Type is Id of User(mean which user generated url);
       ref: "users", // now this id reference to users collection.
-    }
+    },
   },
   { timestamps: true }
 );
