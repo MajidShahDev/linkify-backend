@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - <%= shortId %>
+    </title>
+    <link rel="stylesheet" href="/css/output.css">
+</head>
+
+<body class="font-sans bg-gray-100 m-0 p-0">
+
+    <div class="container max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
+
+        <header class="flex justify-between items-center mb-6">
+            <a href="/" class="no-underline">
+                <h1 class="text-gray-800 text-2xl m-0">Linkify Analytics</h1>
+            </a>
+            <form action="/user/logout" method="get">
+                <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm cursor-pointer">Logout</button>
+            </form>
+        </header>
+        <div class="mb-4 p-3 bg-blue-100 border-l-4 border-blue-500 rounded">
+            For Short URL:
+            <a href="<%= baseUrl %>/<%= shortId %>" target="_blank" class="text-blue-600 underline">
+                <%= baseUrl %>/<%= shortId %>
+            </a>
+        </div>
+
+
+        <p class="mb-6 text-gray-600 font-medium">Total Clicks: <%= totalClicks %>
+        </p>
+
+        <div class="overflow-x-auto bg-white shadow ">
+            <table class="w-full table-fixed border-collapse text-sm">
+                <thead>
+                    <tr class="bg-gray-100 border border-gray-200">
+                        <th class="px-3 py-3 text-left w-12">#</th>
+                        <th class="px-3 py-3 text-left w-44 wrap-break-word font-semibold tracking-wide">Timestamp</th>
+                        <th class="px-3 py-3 text-left wrap-break-word font-semibold tracking-wide">IP</th>
+                        <th class="px-3 py-3 text-left wrap-break-word font-semibold tracking-wide">Location</th>
+                        <th class="px-3 py-3 text-left wrap-break-word font-semibold tracking-wide">Browser/OS</th>
+                        <th class="px-3 py-3 text-left wrap-break-word font-semibold tracking-wide">Referrer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% analytics.forEach((click, index)=> { %>
+                        <tr class="border-b border-gray-300 hover:bg-gray-50">
+                            <td class="px-3 py-4 align-top">
+                                <%= index + 1 %>
+                            </td>
+                            <td class="px-3 py-4 align-top">
+                                <%= new Date(click.timestamp).toLocaleString() %>
+                            </td>
+                            <td class="px-3 py-4 align-top wrap-break-word">
+                                <%= click.ipAddress || 'N/A' %>
+                            </td>
+                            <td class="px-3 py-4 align-top wrap-break-word">
+                                <%= click.location || 'Unknown' %>
+                            </td>
+                            <td class="px-3 py-4 align-top wrap-break-word">
+                                <%= click.userAgent || 'N/A' %>
+                            </td>
+                            <td class="px-3 py-4 align-top wrap-break-word">
+                                <%= click.referrer || 'Direct' %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

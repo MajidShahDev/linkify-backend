@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import URL from "../models/url.model.js";
+import geoip from "geoip-lite";
 
 // Generate a new short URL
 export async function generateShortUrl(userId, originalUrl) {
@@ -18,13 +19,24 @@ export async function generateShortUrl(userId, originalUrl) {
 }
 
 // Get URL by shortId and record visit
-export async function recordVisit(shortId) {
+export async function recordVisit(shortId, req) {
+  const ip = req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  const geo = geoip.lookup(ip); // returns country, city, region, etc.
   const entry = await URL.findOneAndUpdate(
     { shortId },
     {
-      $push: { visitHistory: { timestamp: Date.now() } },
+      $push: {
+        visitHistory: {
+          timestamp: Date.now(),
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          referrer: req.get("Referrer") || "Direct",
+          location: geo ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}` : "Unknown",
+
+        },
+      },
     },
-    { new: true },
+    { new: true }
   );
 
   if (!entry) throw new Error("Short URL not found");
@@ -75,4 +87,3 @@ export async function editOriginalUrl(userId, shortId, newUrl) {
 
   return entry;
 }
-

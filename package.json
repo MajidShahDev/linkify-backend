@@ -24,6 +24,7 @@
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-validator": "^7.3.1",
+    "geoip-lite": "^1.4.10",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.20.2",
     "multer": "^2.0.2",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
     "morgan": "^1.10.1",
