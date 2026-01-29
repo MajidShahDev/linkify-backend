@@ -11,7 +11,7 @@
 
 <body class="font-sans bg-gray-100 m-0 p-0">
 
-    <div class="container max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
+    <div class="container max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
 
         <header class="flex justify-between items-center mb-6">
             <a href="/" class="no-underline">
@@ -34,7 +34,7 @@
 
                 <form method="post" action="/url" class="mb-5">
                     <label class="block">
-                        Enter/Paste Your Original Long URL
+                        Paste Your Long URL Here
                         <input type="text" name="url" placeholder="https://example.com/long-url"
                             value="<%= oldInput ? oldInput.url : '' %>"
                             class="w-full mt-2 p-2 border border-gray-300 rounded" required>
@@ -57,22 +57,26 @@
 
 
                 <% if (locals.urls) { %>
-                    <table class="w-full table-fixed border-collapse mt-5 text-sm">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="w-12 px-3 py-4 text-left align-top">S.No</th>
-                                <th class="w-63 px-3 py-4 text-left align-top pl-9">Short Link</th>
-                                <th class="w-6 px-3 py-4 align-top"></th>
-                                <th class="max-w-[450px] px-3 py-4 text-left align-top wrap-break-word pl-10">Redirect URL
+                    <table class="w-full table-fixed border-collapse mt-5 text-sm ">
+                        <thead class="rounded-lg">
+                            <tr class="bg-gray-100 border border-gray-200 ">
+                                <th class="w-12 px-3 py-4 text-left align-top font-semibold tracking-wide">S.No</th>
+                                <th class="w-63 px-3 py-4 text-left align-top pl-9 font-semibold tracking-wide">Short
+                                    Link</th>
+                                <th class="w-6 px-3 py-4 align-top font-semibold tracking-wide"></th>
+                                <th
+                                    class="max-w-[450px] px-3 py-4 text-left align-top wrap-break-word pl-3 font-semibold tracking-wide">
+                                    Redirect
+                                    URL
                                 </th>
-                                <th class="w-20 px-3 py-4 text-center align-top">Clicks</th>
-                                <th class="w-16 px-3 py-4 text-left align-top">Action</th>
+                                <th class="w-20 px-3 py-4 text-center align-top font-semibold tracking-wide">Clicks</th>
+                                <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% urls.forEach((url, index)=> { %>
                                 <tr class="border-b border-gray-300">
-                                    <td class="px-3 py-4 align-top">
+                                    <td class="px-3 py-4  align-top">
                                         <%= index + 1 %>
                                     </td>
                                     <td class="px-3 py-4 flex items-start gap-1 align-top ">
@@ -84,21 +88,33 @@
                                             <%= baseUrl %>/<%= url.shortId %>
                                         </a>
                                     </td>
-                                    <td class="px-3 py-4 text-gray-400 align-top rotate-45 relative bottom-[4px]">↝</td>
-                                    <td
-                                        class="px-3 py-4 flex items-start gap-2 break-all whitespace-normal align-top max-w-[450px]">
+                                    <td class="px-3 py-4 text-gray-400 rotate-45 relative bottom-[4px]">↝</td>
+                                    <td class="px-3 py-4  break-all whitespace-normal align-top max-w-[450px]">
+
+
+                                        <div>
+                                            <span class="redirectText line-clamp-2 break-all">
+                                                <%= url.redirectURL %>
+                                            </span>
+
+                                            <button
+                                                class="seeMore text-blue-600 text-xs ml-[1px] hidden hover:underline">
+                                                see more
+                                            </button>
+                                        </div>
+
+                                    </td>
+                                    <td class="px-3 py-4 text-center align-top">
+                                        <a class="text-blue-600 hover:underline" target="_blank"
+                                            href="<%= baseUrl %>/url/analytics/<%= url.shortId %>">
+                                            <%= url.visitHistory.length %>
+                                        </a>
+                                    </td>
+                                    <td class="px-3 py-4 align-top flex gap-2">
                                         <img src="/images/edit.svg"
                                             class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
                                             alt="Edit URL" title="Edit"
                                             onclick="openEditModal('<%= url.shortId %>', '<%= url.redirectURL %>')" />
-                                        <span class="break-all whitespace-normal">
-                                            <%= url.redirectURL %>
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-4 text-center align-top">
-                                        <%= url.visitHistory.length %>
-                                    </td>
-                                    <td class="px-3 py-4 align-top pl-5">
                                         <img src="/images/trash.svg"
                                             class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
                                             alt="Delete URL" title="Delete"
@@ -233,6 +249,22 @@
                     });
             });
         });
+
+        // Redirect Text Function
+        document.querySelectorAll(".redirectText").forEach(text => {
+            const btn = text.nextElementSibling;
+
+            if (text.scrollHeight > text.clientHeight) {
+                btn.classList.remove("hidden");
+            }
+
+            btn.addEventListener("click", () => {
+                text.classList.toggle("line-clamp-2");
+                btn.innerText = btn.innerText === "see more" ? "see less" : "see more";
+            });
+        });
+
+
     </script>
 
 </body>
