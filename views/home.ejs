@@ -147,7 +147,8 @@
                                         <!-- <%= url.createdAt ? new Date(url.createdAt).toLocaleString('en-US', {
                                             year: 'numeric' , month: 'numeric' , day: 'numeric' ,  }) : '-' %> -->
                                         <%= url.createdAt ? new Date(url.createdAt).toLocaleDateString('en-GB', {
-                                            day: '2-digit' , month: 'short' , year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : '-' %>
+                                            day: '2-digit' , month: 'short' , year: 'numeric' , hour: 'numeric' ,
+                                            minute: 'numeric' , hour12: true }) : '-' %>
                                     </td>
 
 
@@ -161,21 +162,21 @@
 
                             <% if(currentPage> 1) { %>
                                 <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>"
-                                    class="px-3 py-1 border rounded">
+                                    class="px-3 py-1 border rounded border-gray-900">
                                     Prev
                                 </a>
                                 <% } %>
 
                                     <% for(let i=1; i <=totalPages; i++) { %>
-                                        <a href="/?page=<%= i %>&search=<%= search %>" class="px-3 py-1 border rounded
-       <%= currentPage === i ? 'bg-black text-white' : '' %>">
+                                        <a href="/?page=<%= i %>&search=<%= search %>" class="px-3 py-1 border border-gray-900 rounded
+       <%= currentPage === i ? 'bg-gray-800 text-white ' : '' %>">
                                             <%= i %>
                                         </a>
                                         <% } %>
 
                                             <% if(currentPage < totalPages) { %>
                                                 <a href="/?page=<%= currentPage + 1 %>&search=<%= search %>"
-                                                    class="px-3 py-1 border rounded">
+                                                    class="px-3 py-1 border border-gray-900 rounded ">
                                                     Next
                                                 </a>
                                                 <% } %>
