@@ -84,7 +84,7 @@
                                 </th>
                                 <th class="w-20 px-3 py-4 text-center align-top font-semibold tracking-wide">Clicks</th>
                                 <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
-                                <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
+                                <th class="w-28 px-4 py-4 text-left align-top font-semibold tracking-wide">Created</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,7 +109,7 @@
                                             <%= baseUrl %>/<%= url.shortId %>
                                         </a>
                                     </td>
-                                    <td class="px-3 py-4 text-gray-400 rotate-45 relative bottom-1">↝</td>
+                                    <td class="px-3 py-4 text-gray-400 rotate-45 relative bottom-3.5">↝</td>
                                     <td class="px-3 py-4  break-all whitespace-normal align-top max-w-112.5">
 
 
@@ -143,6 +143,14 @@
                                             alt="Delete URL" title="Delete"
                                             onclick="openDeleteModal('<%= url.shortId %>')" />
                                     </td>
+                                    <td class="px-4 py-4  align-top text-gray-500">
+                                        <!-- <%= url.createdAt ? new Date(url.createdAt).toLocaleString('en-US', {
+                                            year: 'numeric' , month: 'numeric' , day: 'numeric' ,  }) : '-' %> -->
+                                        <%= url.createdAt ? new Date(url.createdAt).toLocaleDateString('en-GB', {
+                                            day: '2-digit' , month: 'short' , year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : '-' %>
+                                    </td>
+
+
                                 </tr>
                                 <% }) %>
                         </tbody>
@@ -152,7 +160,8 @@
                         <div class="flex justify-center mt-6 gap-2">
 
                             <% if(currentPage> 1) { %>
-                                <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>" class="px-3 py-1 border rounded">
+                                <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>"
+                                    class="px-3 py-1 border rounded">
                                     Prev
                                 </a>
                                 <% } %>
