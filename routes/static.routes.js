@@ -55,33 +55,63 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
 });
 
 router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
-  // if(!req.user) return res.redirect('/login');
   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-  // const allUrls = await URL.find({ createdBy: req.user._id }).sort({
-  //   createdAt: -1,
-  // });
-  const page = parseInt(req.query.page) || 1; // current page
-  const limit = 15; // urls per page
+  const page = parseInt(req.query.page) || 1;
+  const limit = 15;
   const skip = (page - 1) * limit;
 
-  const totalUrls = await URL.countDocuments({ createdBy: req.user._id });
+  // Escape regex special characters in search query
+  function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 
-  const allUrls = await URL.find({ createdBy: req.user._id })
+  // Unescape URLs to display normally
+  function unescapeUrl(escapedUrl) {
+    return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
+  }
+
+  const search = (req.query.search || "").trim();
+  const escapedSearch = escapeRegex(search);
+
+   // Remove baseUrl from search if present, to match shortId
+  let shortIdSearch = escapedSearch.replace(new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"), "");
+
+  // Filter for search in redirectURL or shortId
+  const filter = {
+    createdBy: req.user._id,
+    $or: [
+      { redirectURL: { $regex: escapedSearch, $options: "i" } },
+      { shortId: { $regex: shortIdSearch, $options: "i" } }
+    ],
+  };
+
+  const totalUrls = await URL.countDocuments(filter);
+
+  const allUrls = await URL.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
+  // Unescape redirectURL for frontend display
+  const displayUrls = allUrls.map(url => ({
+    ...url._doc,
+    redirectURL: unescapeUrl(url.redirectURL)
+  }));
+
   const totalPages = Math.ceil(totalUrls / limit);
+
   return res.render("home", {
-    urls: allUrls,
-    id: req.query.created || null, // last created shortId
+    urls: displayUrls,
+    id: req.query.created || null,
     errors: {},
     oldInput: {},
     baseUrl,
     currentPage: page,
     totalPages,
+    search, // normal search text in input
   });
 });
+
 
 router.get("/create-link", async (req, res) => {
   return res.render("create-link", {
