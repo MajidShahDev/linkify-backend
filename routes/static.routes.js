@@ -57,15 +57,29 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
 router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
   // if(!req.user) return res.redirect('/login');
   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-  const allUrls = await URL.find({ createdBy: req.user._id }).sort({
-    createdAt: -1,
-  });
+  // const allUrls = await URL.find({ createdBy: req.user._id }).sort({
+  //   createdAt: -1,
+  // });
+  const page = parseInt(req.query.page) || 1; // current page
+  const limit = 15; // urls per page
+  const skip = (page - 1) * limit;
+
+  const totalUrls = await URL.countDocuments({ createdBy: req.user._id });
+
+  const allUrls = await URL.find({ createdBy: req.user._id })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalPages = Math.ceil(totalUrls / limit);
   return res.render("home", {
     urls: allUrls,
     id: req.query.created || null, // last created shortId
     errors: {},
     oldInput: {},
     baseUrl,
+    currentPage: page,
+    totalPages,
   });
 });
 
