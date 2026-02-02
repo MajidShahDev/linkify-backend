@@ -37,7 +37,7 @@
                         Paste Your Long URL Here
                         <input type="text" name="url" placeholder="https://example.com/long-url"
                             value="<%= oldInput ? oldInput.url : '' %>"
-                            class="w-full mt-2 p-2 border border-gray-300 rounded" required>
+                            class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500" required>
                     </label>
 
                     <% if (errors && errors.length> 0) { %>
@@ -51,8 +51,20 @@
                         <% } %>
 
                             <button type="submit"
-                                class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer">Generate
+                                class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer ">Generate
                                 Short Link</button>
+                </form>
+
+
+                <form method="get" action="/" class="mb-4 flex gap-2">
+
+                    <input type="text" name="search" placeholder="Search URLs..." value="<%= search || '' %>"
+                        class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500" />
+
+                    <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer">
+                        Search
+                    </button>
+
                 </form>
 
 
@@ -72,6 +84,7 @@
                                 </th>
                                 <th class="w-20 px-3 py-4 text-center align-top font-semibold tracking-wide">Clicks</th>
                                 <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
+                                <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -79,7 +92,7 @@
                                 <tr class="border-b border-gray-300">
                                     <td class="px-3 py-4  align-top">
                                         <!-- <%= index + 1 %> -->
-                                         <%= (currentPage - 1) * 15 + index + 1 %>
+                                        <%= (currentPage - 1) * 15 + index + 1 %>
 
                                     </td>
                                     <td class="px-3 py-4 flex items-start gap-1 align-top ">
@@ -139,20 +152,20 @@
                         <div class="flex justify-center mt-6 gap-2">
 
                             <% if(currentPage> 1) { %>
-                                <a href="/?page=<%= currentPage - 1 %>" class="px-3 py-1 border rounded">
+                                <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>" class="px-3 py-1 border rounded">
                                     Prev
                                 </a>
                                 <% } %>
 
                                     <% for(let i=1; i <=totalPages; i++) { %>
-                                        <a href="/?page=<%= i %>" class="px-3 py-1 border rounded
+                                        <a href="/?page=<%= i %>&search=<%= search %>" class="px-3 py-1 border rounded
        <%= currentPage === i ? 'bg-black text-white' : '' %>">
                                             <%= i %>
                                         </a>
                                         <% } %>
 
                                             <% if(currentPage < totalPages) { %>
-                                                <a href="/?page=<%= currentPage + 1 %>"
+                                                <a href="/?page=<%= currentPage + 1 %>&search=<%= search %>"
                                                     class="px-3 py-1 border rounded">
                                                     Next
                                                 </a>

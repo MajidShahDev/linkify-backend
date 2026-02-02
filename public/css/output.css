@@ -636,6 +636,18 @@
     outline-style: var(--tw-outline-style);
     outline-width: 1px;
   }
+  .outline-gray-400 {
+    outline-color: var(--color-gray-400);
+  }
+  .outline-gray-500 {
+    outline-color: var(--color-gray-500);
+  }
+  .outline-gray-700 {
+    outline-color: var(--color-gray-700);
+  }
+  .outline-gray-800 {
+    outline-color: var(--color-gray-800);
+  }
   .filter {
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
