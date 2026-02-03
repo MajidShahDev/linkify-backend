@@ -25,6 +25,7 @@ export async function recordVisit(shortId, req) {
   const entry = await URL.findOneAndUpdate(
     { shortId },
     {
+      $inc: {clicks: 1},
       $push: {
         visitHistory: {
           timestamp: Date.now(),
