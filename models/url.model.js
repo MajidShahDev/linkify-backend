@@ -11,6 +11,11 @@ const urlSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+     clicks: {
+      type: Number,
+      default: 0,
+      index: true, // 🔥 important for sorting
+    },
     visitHistory: [
       {
         timestamp: { type: Date },

@@ -60,9 +60,12 @@ router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
   const limit = 15;
   const skip = (page - 1) * limit;
 
+  const search = (req.query.search || "").trim();
+  const sort = req.query.sort || "newest";
+
   // Escape regex special characters in search query
   function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   // Unescape URLs to display normally
@@ -70,48 +73,154 @@ router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
     return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
   }
 
-  const search = (req.query.search || "").trim();
   const escapedSearch = escapeRegex(search);
 
-   // Remove baseUrl from search if present, to match shortId
-  let shortIdSearch = escapedSearch.replace(new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"), "");
+  // Remove baseUrl from search if present, to match shortId
+  let shortIdSearch = escapedSearch.replace(
+    new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"),
+    ""
+  );
 
   // Filter for search in redirectURL or shortId
   const filter = {
     createdBy: req.user._id,
     $or: [
       { redirectURL: { $regex: escapedSearch, $options: "i" } },
-      { shortId: { $regex: shortIdSearch, $options: "i" } }
+      { shortId: { $regex: shortIdSearch, $options: "i" } },
     ],
   };
+
+  // sorting logic (explicit & safe)
+  let sortOption;
+
+  switch (sort) {
+    case "oldest":
+      sortOption = { createdAt: 1 };
+      break;
+
+    case "mostClicks":
+      sortOption = { clicks: -1 };
+      break;
+
+    case "leastClicks":
+      sortOption = { clicks: 1 };
+      break;
+
+    case "newest":
+    default:
+      sortOption = { createdAt: -1 };
+  }
 
   const totalUrls = await URL.countDocuments(filter);
 
   const allUrls = await URL.find(filter)
-    .sort({ createdAt: -1 })
+    .sort(sortOption )
     .skip(skip)
     .limit(limit);
 
   // Unescape redirectURL for frontend display
-  const displayUrls = allUrls.map(url => ({
+  const displayUrls = allUrls.map((url) => ({
     ...url._doc,
-    redirectURL: unescapeUrl(url.redirectURL)
+    redirectURL: unescapeUrl(url.redirectURL),
   }));
 
   const totalPages = Math.ceil(totalUrls / limit);
 
   return res.render("home", {
     urls: displayUrls,
-    id: req.query.created || null,
-    errors: {},
-    oldInput: {},
     baseUrl,
     currentPage: page,
     totalPages,
     search, // normal search text in input
+    sort,
+    id: req.query.created || null,
+    errors: {},
+    oldInput: {},
   });
 });
 
+// router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+//   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = 15;
+//   const skip = (page - 1) * limit;
+
+//   const search = (req.query.search || "").trim();
+//   const sort = req.query.sort || "newest";
+
+//   // escape regex
+//   function escapeRegex(string) {
+//     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+//   }
+
+//   function unescapeUrl(escapedUrl) {
+//     return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
+//   }
+
+//   const escapedSearch = escapeRegex(search);
+
+//   // allow searching by full short URL
+//   const shortIdSearch = escapedSearch.replace(
+//     new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"),
+//     ""
+//   );
+
+//   const filter = {
+//     createdBy: req.user._id,
+//     $or: [
+//       { redirectURL: { $regex: escapedSearch, $options: "i" } },
+//       { shortId: { $regex: shortIdSearch, $options: "i" } },
+//     ],
+//   };
+
+//   // sorting logic (explicit & safe)
+//   let sortOption;
+
+//   switch (sort) {
+//     case "oldest":
+//       sortOption = { createdAt: 1 };
+//       break;
+
+//     case "mostClicks":
+//       sortOption = { clicks: -1 };
+//       break;
+
+//     case "leastClicks":
+//       sortOption = { clicks: 1 };
+//       break;
+
+//     case "newest":
+//     default:
+//       sortOption = { createdAt: -1 };
+//   }
+
+//   const totalUrls = await URL.countDocuments(filter);
+
+//   const urls = await URL.find(filter)
+//     .sort(sortOption)
+//     .skip(skip)
+//     .limit(limit);
+
+//   const displayUrls = urls.map(url => ({
+//     ...url._doc,
+//     redirectURL: unescapeUrl(url.redirectURL),
+//   }));
+
+//   const totalPages = Math.ceil(totalUrls / limit);
+
+//   res.render("home", {
+//     urls: displayUrls,
+//     baseUrl,
+//     currentPage: page,
+//     totalPages,
+//     search,
+//     sort,
+//     id: req.query.created || null,
+//     errors: {},
+//     oldInput: {},
+//   });
+// });
 
 router.get("/create-link", async (req, res) => {
   return res.render("create-link", {
