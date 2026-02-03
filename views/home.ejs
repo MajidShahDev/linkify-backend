@@ -37,7 +37,8 @@
                         Paste Your Long URL Here
                         <input type="text" name="url" placeholder="https://example.com/long-url"
                             value="<%= oldInput ? oldInput.url : '' %>"
-                            class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500" required>
+                            class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500 hover:border-gray-400"
+                            required>
                     </label>
 
                     <% if (errors && errors.length> 0) { %>
@@ -59,7 +60,28 @@
                 <form method="get" action="/" class="mb-4 flex gap-2">
 
                     <input type="text" name="search" placeholder="Search URLs..." value="<%= search || '' %>"
-                        class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500" />
+                        class="w-full mt-2 p-2 border border-gray-300 hover:border-gray-400 rounded outline-gray-500" />
+
+                    <div class="relative inline-block w-40">
+                        <select name="sort"
+                            class="mt-2 p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-500 appearance-none w-full">
+                            <option value="newest" <%=sort==="newest" ? "selected" : "" %>>Newest</option>
+                            <option value="oldest" <%=sort==="oldest" ? "selected" : "" %>>Oldest</option>
+                            <option value="mostClicks" <%=sort==="mostClicks" ? "selected" : "" %>>Most Clicks</option>
+                            <option value="leastClicks" <%=sort==="leastClicks" ? "selected" : "" %>>Least Clicks
+                            </option>
+                        </select>
+
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-2 top-3 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5  text-gray-800" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+
 
                     <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer">
                         Search
@@ -161,21 +183,21 @@
                         <div class="flex justify-center mt-6 gap-2">
 
                             <% if(currentPage> 1) { %>
-                                <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>"
+                                <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>"
                                     class="px-3 py-1 border rounded border-gray-900">
                                     Prev
                                 </a>
                                 <% } %>
 
                                     <% for(let i=1; i <=totalPages; i++) { %>
-                                        <a href="/?page=<%= i %>&search=<%= search %>" class="px-3 py-1 border border-gray-900 rounded
+                                        <a href="/?page=<%= i %>&search=<%= search %>&sort=<%= sort %>" class="px-3 py-1 border border-gray-900 rounded
        <%= currentPage === i ? 'bg-gray-800 text-white ' : '' %>">
                                             <%= i %>
                                         </a>
                                         <% } %>
 
                                             <% if(currentPage < totalPages) { %>
-                                                <a href="/?page=<%= currentPage + 1 %>&search=<%= search %>"
+                                                <a href="/?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>"
                                                     class="px-3 py-1 border border-gray-900 rounded ">
                                                     Next
                                                 </a>
@@ -222,7 +244,7 @@
                         <!-- QR Modal -->
                         <div id="qrModal"
                             class="fixed inset-0 bg-opacity-40 flex items-center justify-center hidden z-50">
-                            <div class="bg-white p-12 rounded-lg text-center border shadow-lg border border-gray-500">
+                            <div class="bg-white p-12 rounded-lg text-center border shadow-lg  border-gray-500">
                                 <h3 class="text-lg font-semibold mb-3">QR Code</h3>
 
                                 <img id="qrImage" class="mx-auto mb-4" />
