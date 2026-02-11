@@ -1,37 +1,40 @@
 import { validationResult } from "express-validator";
+import { getHomePageData } from "../services/url.service.js";
 import URL from "../models/url.model.js";
 import {
-  generateShortUrl,
+  createShortUrl,
   recordVisit,
   getAnalytics,
   deleteShortUrl,
-  editOriginalUrl
+  editOriginalUrl,
 } from "../services/url.service.js"; // adjust path
 
-
-export async function handleGenerateNewShortUrl(req, res) {
+export async function handleCreateNewShortUrl(req, res) {
   const errors = validationResult(req);
+  const data = await getHomePageData(req.user, req.query);
 
   if (!errors.isEmpty()) {
     return res.status(400).render("home", {
-      errors: errors.array().map(err => err.msg),
+      ...data,
+      errors: errors.array().map((err) => err.msg),
       oldInput: { url: req.body.url },
+      search: (req.query.search || "").trim(),
       urls: await URL.find({ createdBy: req.user._id }),
     });
   }
 
   try {
-    const urlEntry = await generateShortUrl(req.user._id, req.body.url);
+    const urlEntry = await createShortUrl(req.user._id, req.body.url);
 
     // PRG
     return res.redirect("/?created=" + urlEntry.shortId);
     // ?created=shortid // short id is passed as query parameter
-
   } catch (err) {
     return res.status(400).render("home", {
       errors: [err.message],
       oldInput: { url: req.body.url },
       urls: await URL.find({ createdBy: req.user._id }),
+      search,
     });
   }
 }
@@ -61,8 +64,12 @@ export async function handleRedirectToOrignalURL(req, res) {
 export async function handleGetAnalytics(req, res) {
   try {
     const analyticsData = await getAnalytics(req.params.shortId);
-      const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-    res.render("analytics", { ...analyticsData, shortId: req.params.shortId, baseUrl });
+    const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+    res.render("analytics", {
+      ...analyticsData,
+      shortId: req.params.shortId,
+      baseUrl,
+    });
   } catch (err) {
     console.error(err.message);
     return res.status(404).send("Short URL not found");
@@ -81,8 +88,6 @@ export async function handleDeleteShortUrl(req, res) {
   }
 }
 
-
-
 export async function handleEditOriginalUrl(req, res) {
   const { shortId } = req.params;
   const { newUrl } = req.body;
@@ -96,4 +101,3 @@ export async function handleEditOriginalUrl(req, res) {
     return res.status(status).json({ error: err.message });
   }
 }
-

@@ -11,10 +11,27 @@ const urlSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-     clicks: {
+    clicks: {
       type: Number,
       default: 0,
       index: true, // 🔥 important for sorting
+    },
+    clicks24h: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+
+    clicks7d: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+
+    clicks30d: {
+      type: Number,
+      default: 0,
+      index: true,
     },
     visitHistory: [
       {
@@ -34,5 +51,4 @@ const urlSchema = new mongoose.Schema(
 );
 
 const URL = mongoose.model("URL", urlSchema);
-
 export default URL;
