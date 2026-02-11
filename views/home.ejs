@@ -37,7 +37,7 @@
                         Paste Your Long URL Here
                         <input type="text" name="url" placeholder="https://example.com/long-url"
                             value="<%= oldInput ? oldInput.url : '' %>"
-                            class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-500 hover:border-gray-400"
+                            class="w-full mt-2 p-2 border border-gray-300 rounded outline-gray-400 hover:border-gray-400"
                             required>
                     </label>
 
@@ -60,11 +60,11 @@
                 <form method="get" action="/" class="mb-4 flex gap-2">
 
                     <input type="text" name="search" placeholder="Search URLs..." value="<%= search || '' %>"
-                        class="w-full mt-2 p-2 border border-gray-300 hover:border-gray-400 rounded outline-gray-500" />
+                        class="w-full mt-2 p-2 border border-gray-300 hover:border-gray-400 rounded outline-gray-400" />
 
                     <div class="relative inline-block w-40">
                         <select name="sort"
-                            class="mt-2 p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-500 appearance-none w-full">
+                            class="mt-2 p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-400 appearance-none w-full">
                             <option value="newest" <%=sort==="newest" ? "selected" : "" %>>Newest</option>
                             <option value="oldest" <%=sort==="oldest" ? "selected" : "" %>>Oldest</option>
                             <option value="mostClicks" <%=sort==="mostClicks" ? "selected" : "" %>>Most Clicks</option>

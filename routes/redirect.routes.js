@@ -1,11 +1,11 @@
+
 import express from "express";
 import { handleRedirectToOrignalURL } from "../controllers/url.controller.js";
+import { redirectLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-router.route("/:shortId").get(handleRedirectToOrignalURL);
-
-
+router.get("/:shortId", redirectLimiter, handleRedirectToOrignalURL);
 
 
 

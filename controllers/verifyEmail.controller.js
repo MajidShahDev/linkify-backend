@@ -47,7 +47,7 @@ export async function handleSendVerificationEmail(reqOrUser, res = null) {
 
     // If res exists, render the page (route call)
     if (res) {
-      return res.render("verify-email", {
+      return res.render("auth/verify-email", {
         message: "Verification email sent!",
         error: null,
         info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
@@ -121,7 +121,7 @@ export async function handleResendVerificationEmail(req, res) {
     const token = await generateEmailVerificationToken(user._id);
     await sendVerificationEmail(user.email, token);
 
-    return res.render("verify-email", {
+    return res.render("auth/verify-email", {
       message: "Verification email resent!",
       error: null,
       info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",

@@ -129,7 +129,7 @@ export async function handleUserLogin(req, res) {
       fieldErrors[err.path].push(err.msg);
     });
 
-    return res.status(400).render("login", {
+    return res.status(400).render("auth/login", {
       errors: fieldErrors,
       oldInput: { email: req.body.email || "" },
     });
@@ -149,7 +149,7 @@ export async function handleUserLogin(req, res) {
     return res.redirect("/");
   } catch (err) {
     // wrong credentials or other errors
-    return res.status(400).render("login", {
+    return res.status(400).render("auth/login", {
       errors: { general: [err.message] },
       oldInput: { email: req.body.email || "" },
     });
