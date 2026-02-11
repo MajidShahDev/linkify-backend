@@ -1,8 +1,10 @@
+
 import express from "express";
 import { body } from "express-validator";
 import qrService from "qrcode";
+import { analyticsLimiter, createShortUrlLimiter } from "../middlewares/rateLimiter.js";
 import {
-  handleGenerateNewShortUrl,
+  handleCreateNewShortUrl,
   handleGetAnalytics,
   handleDeleteShortUrl,
   handleEditOriginalUrl,
@@ -15,6 +17,7 @@ const router = express.Router();
 
 router.post(
   "/",
+  createShortUrlLimiter,
   [
     body("url")
       .notEmpty()
@@ -22,11 +25,11 @@ router.post(
       .isURL({ require_protocol: true })
       .withMessage("Please enter a valid URL with http:// or https://")
   ],
-  handleGenerateNewShortUrl
+  handleCreateNewShortUrl
 );
 
 // router.post("/", handleGenerateNewShortUrl);
-router.get("/analytics/:shortId", handleGetAnalytics);
+router.get("/analytics/:shortId",analyticsLimiter, handleGetAnalytics);
 router.delete("/:shortId", handleDeleteShortUrl);
 router.put("/:shortId", handleEditOriginalUrl);
 

@@ -2,6 +2,7 @@ import express from "express";
 import URL from "../models/url.model.js";
 import { restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
+import { getHomePageData } from "../services/url.service.js";
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ router.get("/forgot-password", async (req, res) => {
   return res.render("auth/forgot-password", {
     message: null,
     error: null,
+    // errors: { general: [] }, // <--- make sure this exists
+    errors: {}, // <--- make sure this exists
     oldInput: {},
   });
 });
@@ -54,85 +57,10 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
   });
 });
 
-router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
-  const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-  const page = parseInt(req.query.page) || 1;
-  const limit = 15;
-  const skip = (page - 1) * limit;
-
-  const search = (req.query.search || "").trim();
-  const sort = req.query.sort || "newest";
-
-  // Escape regex special characters in search query
-  function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  // Unescape URLs to display normally
-  function unescapeUrl(escapedUrl) {
-    return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
-  }
-
-  const escapedSearch = escapeRegex(search);
-
-  // Remove baseUrl from search if present, to match shortId
-  let shortIdSearch = escapedSearch.replace(
-    new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"),
-    ""
-  );
-
-  // Filter for search in redirectURL or shortId
-  const filter = {
-    createdBy: req.user._id,
-    $or: [
-      { redirectURL: { $regex: escapedSearch, $options: "i" } },
-      { shortId: { $regex: shortIdSearch, $options: "i" } },
-    ],
-  };
-
-  // sorting logic (explicit & safe)
-  let sortOption;
-
-  switch (sort) {
-    case "oldest":
-      sortOption = { createdAt: 1 };
-      break;
-
-    case "mostClicks":
-      sortOption = { clicks: -1 };
-      break;
-
-    case "leastClicks":
-      sortOption = { clicks: 1 };
-      break;
-
-    case "newest":
-    default:
-      sortOption = { createdAt: -1 };
-  }
-
-  const totalUrls = await URL.countDocuments(filter);
-
-  const allUrls = await URL.find(filter)
-    .sort(sortOption )
-    .skip(skip)
-    .limit(limit);
-
-  // Unescape redirectURL for frontend display
-  const displayUrls = allUrls.map((url) => ({
-    ...url._doc,
-    redirectURL: unescapeUrl(url.redirectURL),
-  }));
-
-  const totalPages = Math.ceil(totalUrls / limit);
-
-  return res.render("home", {
-    urls: displayUrls,
-    baseUrl,
-    currentPage: page,
-    totalPages,
-    search, // normal search text in input
-    sort,
+router.get("/", restrictTo(["NORMAL","ADMIN"]), async (req,res)=>{
+  const data = await getHomePageData(req.user, req.query);
+  res.render("home", {
+    ...data,
     id: req.query.created || null,
     errors: {},
     oldInput: {},

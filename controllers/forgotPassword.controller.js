@@ -34,6 +34,7 @@ export async function handleForgotPassword(req, res) {
     return res.status(400).render("auth/forgot-password", {
       message: null, // always define message
       error: fieldErrors.email ? fieldErrors.email[0] : null,
+      errors: {},
       oldInput: { email: req.body.email || "" },
     });
   }
@@ -47,6 +48,7 @@ export async function handleForgotPassword(req, res) {
     res.render("auth/forgot-password", {
       message: "Reset link sent to your email!",
       error: null, // always define error
+      errors: null,
       oldInput: { email },
     });
   } catch (err) {
@@ -54,6 +56,7 @@ export async function handleForgotPassword(req, res) {
       message: null,
       error: err.message,
       oldInput: { email: req.body.email || "" },
+      errors: {},
     });
   }
 }
