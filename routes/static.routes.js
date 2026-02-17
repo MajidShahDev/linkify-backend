@@ -67,6 +67,34 @@ router.get("/", restrictTo(["NORMAL","ADMIN"]), async (req,res)=>{
   });
 });
 
+
+router.get("/create-link", async (req, res) => {
+  return res.render("create-link", {
+    message: null,
+    errors: null,
+    oldInput: {},
+  });
+});
+
+// router.get("/links", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+//   // if(!req.user) return res.redirect('/login');
+//   const allUrls = await URL.find({ createdBy: req.user._id });
+//   return res.render("links", {
+//     urls: allUrls,
+//     errors: {},
+//     oldInput: {},
+//   });
+// });
+
+router.get("/upload", async (req, res) => {
+  return res.render("upload");
+});
+
+export default router;
+
+
+
+
 // router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
 //   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
 
@@ -149,27 +177,3 @@ router.get("/", restrictTo(["NORMAL","ADMIN"]), async (req,res)=>{
 //     oldInput: {},
 //   });
 // });
-
-router.get("/create-link", async (req, res) => {
-  return res.render("create-link", {
-    message: null,
-    errors: null,
-    oldInput: {},
-  });
-});
-
-router.get("/links", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
-  // if(!req.user) return res.redirect('/login');
-  const allUrls = await URL.find({ createdBy: req.user._id });
-  return res.render("links", {
-    urls: allUrls,
-    errors: {},
-    oldInput: {},
-  });
-});
-
-router.get("/upload", async (req, res) => {
-  return res.render("upload");
-});
-
-export default router;
