@@ -19,7 +19,6 @@ export async function handleCreateNewShortUrl(req, res) {
       errors: errors.array().map((err) => err.msg),
       oldInput: { url: req.body.url },
       search: (req.query.search || "").trim(),
-      urls: await URL.find({ createdBy: req.user._id }),
     });
   }
 
