@@ -22,16 +22,47 @@
                     class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm cursor-pointer">Logout</button>
             </form>
         </header>
-        <div class="mb-4 p-3 bg-blue-100 border-l-4 border-blue-500 rounded">
-            For Short URL:
-            <a href="<%= baseUrl %>/<%= shortId %>" target="_blank" class="text-blue-600 underline">
+        <div class="mb-4 p-3 bg-blue-100 border-l-4 border-blue-500 rounded ">
+            For Short URL :
+            <a href="<%= baseUrl %>/<%= shortId %>" target="_blank" class="text-blue-600 no-underline hover:underline">
                 <%= baseUrl %>/<%= shortId %>
             </a>
         </div>
 
+        <div class="flex justify-between align-middle">
+            <p class="mb-6 text-gray-600 font-medium text-lg pt-3">Total Clicks: <%= totalClicks %>
+            </p>
 
-        <p class="mb-6 text-gray-600 font-medium">Total Clicks: <%= totalClicks %>
-        </p>
+            <form method="GET" action="" class="flex items-center gap-3 mb-6">
+
+                <div class="relative inline-block w-40">
+                    <select name="time"
+                        class="mt-2 p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-400 appearance-none w-full">
+
+                        <option value="all" <%=timeRange==="all" ? "selected" : "" %>>All Time</option>
+                        <option value="24h" <%=timeRange==="24h" ? "selected" : "" %>>Last 24 h</option>
+                        <option value="7d" <%=timeRange==="7d" ? "selected" : "" %>>Last 7 Days</option>
+                        <option value="30d" <%=timeRange==="30d" ? "selected" : "" %>>Last 30 Days</option>
+
+                    </select>
+
+                    <div class="pointer-events-none absolute inset-y-0 right-2 top-3 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button type="submit" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                    Apply
+                </button>
+
+            </form>
+
+
+        </div>
+
+
 
         <div class="overflow-x-auto bg-white shadow ">
             <table class="w-full table-fixed border-collapse text-sm">
@@ -52,7 +83,10 @@
                                 <%= index + 1 %>
                             </td>
                             <td class="px-3 py-4 align-top">
-                                <%= new Date(click.timestamp).toLocaleString() %>
+                                <!-- <%= new Date(click.timestamp).toLocaleString() %> -->
+                                 <%= click.timestamp ? new Date(click.timestamp).toLocaleDateString('en-GB', {
+                                            day: '2-digit' , month: 'short' , year: 'numeric' , hour: 'numeric' ,
+                                            minute: 'numeric' , hour12: true }) : '-' %>
                             </td>
                             <td class="px-3 py-4 align-top wrap-break-word">
                                 <%= click.ipAddress || 'N/A' %>
@@ -71,6 +105,29 @@
                 </tbody>
             </table>
         </div>
+        <div class="flex justify-center mt-6 gap-2">
+            <% if(currentPage> 1) { %>
+                <a href="/url/analytics/<%= shortId %>?page=<%= currentPage - 1 %>&time=<%= timeRange %>"
+                    class="px-3 py-1 border rounded border-gray-900">
+                    Prev
+                </a>
+                <% } %>
+
+                    <% for(let i=1; i <=totalPages; i++) { %>
+                        <a href="/url/analytics/<%= shortId %>?page=<%= i %>&time=<%= timeRange %>" class="px-3 py-1 border border-gray-900 rounded
+       <%= currentPage === i ? 'bg-gray-800 text-white' : '' %>">
+                            <%= i %>
+                        </a>
+                        <% } %>
+
+                            <% if(currentPage < totalPages) { %>
+                                <a href="/url/analytics/<%= shortId %>?page=<%= currentPage + 1 %>&time=<%= timeRange %>"
+                                    class="px-3 py-1 border border-gray-900 rounded">
+                                    Next
+                                </a>
+                                <% } %>
+        </div>
+
 
     </div>
 
