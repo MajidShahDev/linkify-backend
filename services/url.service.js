@@ -48,15 +48,84 @@ export async function recordVisit(shortId, req) {
 }
 
 // Get analytics
-export async function getAnalytics(shortId) {
-  const entry = await URL.findOne({ shortId });
-  if (!entry) throw new Error("Short URL not found");
+// export async function getAnalytics(shortId) {
+//   const entry = await URL.findOne({ shortId });
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return {
+//     totalClicks: entry.visitHistory.length,
+//     analytics: entry.visitHistory,
+//   };
+// }
+// export async function getAnalytics(shortId, timeRange) {
+
+//   const url = await URL.findOne({ shortId });
+
+//   if (!url) throw new Error("Not found");
+
+//   const now = new Date();
+//   let filteredVisits = url.visitHistory;
+
+//   if (timeRange === "24h") {
+//     const last24h = new Date(now - 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last24h
+//     );
+//   }
+
+//   if (timeRange === "7d") {
+//     const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last7d
+//     );
+//   }
+
+//   if (timeRange === "30d") {
+//     const last30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last30d
+//     );
+//   }
+
+//   return {
+//     totalClicks: filteredVisits.length,
+//     analytics: filteredVisits
+//   };
+// }
+
+export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
+  const url = await URL.findOne({ shortId }, "visitHistory"); // only need visitHistory
+
+  if (!url) throw new Error("Not found");
+
+  const now = new Date();
+  let filteredVisits = url.visitHistory;
+
+  if (timeRange === "24h") {
+    const last24h = new Date(now - 24 * 60 * 60 * 1000);
+    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last24h);
+  } else if (timeRange === "7d") {
+    const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last7d);
+  } else if (timeRange === "30d") {
+    const last30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last30d);
+  }
+
+  const totalClicks = filteredVisits.length;
+  const totalPages = Math.ceil(totalClicks / limit);
+  const skip = (page - 1) * limit;
+
+  const paginatedVisits = filteredVisits.slice(skip, skip + limit);
 
   return {
-    totalClicks: entry.visitHistory.length,
-    analytics: entry.visitHistory,
+    totalClicks,
+    analytics: paginatedVisits,
+    currentPage: page,
+    totalPages
   };
 }
+
 
 // Delete URL
 export async function deleteShortUrl(userId, shortId) {
@@ -99,12 +168,13 @@ export async function getHomePageData(user, query) {
 
   const search = (query.search || "").trim();
   const sort = query.sort || "newest";
-  // const timeRange = query.time || "all";
 
+  // Escape regex for safe search
   function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  // Unescape URL for display
   function unescapeUrl(escapedUrl) {
     return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
   }
@@ -123,15 +193,7 @@ export async function getHomePageData(user, query) {
     ],
   };
 
-  // let clickField;
-  // switch (timeRange) {
-  //   case "24h": clickField = "clicks24h"; break;
-  //   case "7d": clickField = "clicks7d"; break;
-  //   case "30d": clickField = "clicks30d"; break;
-  //   case "all":
-  //   default: clickField = "clicks";
-  // }
-
+  // Sorting options
   let sortOption;
   switch (sort) {
     case "oldest":
@@ -141,16 +203,17 @@ export async function getHomePageData(user, query) {
       sortOption = { createdAt: -1 };
       break;
     case "mostClicks":
-      sortOption = { [clickField]: -1, createdAt: -1 };
+      sortOption = { clicks: -1, createdAt: -1 }; // total clicks
       break;
     case "leastClicks":
-      sortOption = { [clickField]: 1, createdAt: -1 };
+      sortOption = { clicks: 1, createdAt: -1 };
       break;
     default:
       sortOption = { createdAt: -1 };
   }
 
   const totalUrls = await URL.countDocuments(filter);
+
   const allUrls = await URL.find(filter)
     .sort(sortOption)
     .skip(skip)
@@ -170,6 +233,5 @@ export async function getHomePageData(user, query) {
     totalPages,
     search,
     sort,
-    // timeRange
   };
 }
