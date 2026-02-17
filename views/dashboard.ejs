@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linkify Dashboard</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="font-sans bg-gray-100 m-0 p-0">
+  <div class="container max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
+
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-gray-800 text-2xl">Linkify Dashboard</h1>
+      <form action="/user/logout" method="get">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">Logout</button>
+      </form>
+    </header>
+
+    <form method="GET" action="/url/dashboard" class="flex justify-end gap-3 mb-6">
+  <div class="relative inline-block w-40">
+    <select name="time"
+      class="mt-2 p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-400 appearance-none w-full">
+      <option value="all" <%= timeRange === 'all' ? 'selected' : '' %>>All Time</option>
+      <option value="24h" <%= timeRange === '24h' ? 'selected' : '' %>>Last 24 h</option>
+      <option value="7d" <%= timeRange === '7d' ? 'selected' : '' %>>Last 7 Days</option>
+      <option value="30d" <%= timeRange === '30d' ? 'selected' : '' %>>Last 30 Days</option>
+    </select>
+  </div>
+  <button type="submit" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4.5 py-2.5 rounded text-sm">
+    Apply
+  </button>
+</form>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 gap-6 mb-6">
+      <div class="bg-blue-100 p-4 rounded-lg shadow flex flex-col items-center">
+        <p class="text-gray-600">Total URLs</p>
+        <p class="text-2xl font-bold"><%= totalUrls %></p>
+      </div>
+      <div class="bg-green-100 p-4 rounded-lg shadow flex flex-col items-center">
+        <p class="text-gray-600">Total Clicks</p>
+        <p class="text-2xl font-bold"><%= totalClicks %></p>
+      </div>
+    </div>
+
+    <!-- Activity Graph -->
+    <div class="mb-6">
+      <canvas id="clicksChart" height="100"></canvas>
+    </div>
+
+    
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Chart.js for Click Activity
+    const ctx = document.getElementById('clicksChart').getContext('2d');
+    const clicksChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: <%- JSON.stringify(activity.labels) %>, // e.g., ['01 Feb', '02 Feb', ...]
+        datasets: [{
+          label: 'Clicks Over Time',
+          data: <%- JSON.stringify(activity.data) %>, // e.g., [5, 12, 9, ...]
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, precision:0 },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
