@@ -13,7 +13,10 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        // Password is required only for local users
+        return this.provider === "local";
+      },
     },
     role: {
       type: String,
@@ -35,8 +38,22 @@ const userSchema = new mongoose.Schema(
     },
     emailVerificationToken: String,
     emailVerificationExpires: Date,
+
+    // Google OAuth fields
+    googleId: {
+      type: String,
+      unique: true, // no two documents can have the same value
+      sparse: true, //sparse: true = ignore null/undefined values when checking uniqueness
+      //                  // because by default Mongo treats null as a value.
+      //
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User = mongoose.model("User", userSchema);
