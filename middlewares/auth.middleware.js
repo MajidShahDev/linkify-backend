@@ -4,13 +4,16 @@ import { getUser } from "../services/auth.service.js";
 // tryAuthenticateUser
 
 export function tryAuthenticateUser(req, res, next) {
-  const userToken = req.cookies?.token;
-  req.user = null; // This ensures that if there is no token or invalid token, req.user is always defined.
+  req.user = null; // Default to unauthenticated; ensures req.user is always defined
+  //               // Initialize default user state for authentication as null(unauthenticated.)
+  //               // This ensures that if there is no token or invalid token after, req.user is always defined.
+  const userToken = req.cookies?.token; //
   if (!userToken) return next();
   const user = getUser(userToken);
   req.user = user;
   return next();
 }
+
 
 export function restrictTo(roles = ["NORMAL", "ADMIN"]) {
   return function (req, res, next) {
@@ -19,6 +22,15 @@ export function restrictTo(roles = ["NORMAL", "ADMIN"]) {
     return next();
   };
 }
+
+// Both null and undefined cause runtime errors when accessing properties.
+// But setting it to null:
+// Ensure middleware ran successfully, but there is intentionally no authenticated user yet at start.
+// Makes state intentional
+// Makes debugging clearer
+// Guarantees consistent structure
+// Improves architectural quality
+// Reduces hidden bugs
 
 //////////////////////////////////////////////////////////////////////////
 // deserializeUser = “Convert stored auth data (token/session) back into a usable user object for this request.”

@@ -83,51 +83,59 @@
     <div class="container">
         <h1>Login</h1>
 
-<form action="/user/login" method="POST" novalidate>
+        <form action="/user/login" method="POST" novalidate>
 
-    <!-- Email -->
-    <label>
-        Email
-        <input type="email" name="email" value="<%= oldInput ? oldInput.email : '' %>" required>
-    </label>
-    <% if (errors && errors.email) { %>
-        <p style="color:red">
-            <%= errors.email[0] %>
-        </p>
-    <% } %>
+            <!-- Email -->
+            <label>
+                Email
+                <input type="email" name="email" value="<%= oldInput ? oldInput.email : '' %>" required>
+            </label>
+            <% if (errors && errors.email) { %>
+                <p style="color:red">
+                    <%= errors.email[0] %>
+                </p>
+                <% } %>
 
-    <!-- Password -->
-    <label>
-        Password
-        <input type="password" name="password" required>
-    </label>
-    <% if (errors && errors.password) { %>
-        <p style="color:red">
-            <%= errors.password[0] %>
-        </p>
-    <% } %>
+                    <!-- Password -->
+                    <label>
+                        Password
+                        <input type="password" name="password" required>
+                    </label>
+                    <% if (errors && errors.password) { %>
+                        <p style="color:red">
+                            <%= errors.password[0] %>
+                        </p>
+                        <% } %>
 
-    <!-- General error -->
-    <% if (errors && errors.general) { %>
-        <p style="color:red">
-            <%= errors.general[0] %>
-        </p>
-    <% } %>
+                            <!-- General error -->
+                            <% if (errors && errors.general) { %>
+                                <p style="color:red">
+                                    <%= errors.general[0] %>
+                                </p>
+                                <% } %>
 
-    <button type="submit">Login</button>
-</form>
+                                    <button type="submit">Login</button>
+        </form>
 
         <div class="footer">
-             <a href="/forgot-password">Forgot password?</a>
+            <a href="/forgot-password">Forgot password?</a>
         </div>
         <div class="footer">
             Don’t have an account?
             <a href="/signup">Sign up</a>
         </div>
-        
+        <!-- <hr class=""> -->
+        <a href="/auth/google">
+            <button type="button" style="background:#db4437;">
+                Login with Google
+            </button>
+        </a>
+
+
     </div>
 
 </body>
+
 </html>
 
 
@@ -158,4 +166,3 @@
 </body>
 
 </html> -->
-
