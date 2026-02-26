@@ -1,11 +1,13 @@
 // require("dotenv").config();
 import "dotenv/config"; // automatically loads .env
-import "./cronJobs/updateClicks.js"
+import "./cronJobs/updateClicks.js";
 import express from "express";
 import connectMongoDb from "./connection.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import path from "path";
+import passport from "./config/passport.js";
+
 
 // import helmet from "helmet"; // security headers
 
@@ -16,10 +18,9 @@ import userRouter from "./routes/user.routes.js";
 import uploadRouter from "./routes/upload.routes.js";
 import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
 import verifyEmailRouter from "./routes/verifyEmail.routes.js";
+import oauthRoutes from "./routes/oauth.routes.js";
 
-import {
-  tryAuthenticateUser,
-} from "./middlewares/auth.middleware.js";
+import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -42,13 +43,16 @@ app.set("views", path.resolve("./views")); // setting views are in views directo
 //                                This tells Express where to look for files when using res.render().
 //                                // render = template file name // redirect = route/url
 
+// Global Middlewares are attached to every route handlers middleware stack, as first middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(tryAuthenticateUser);
 app.use(express.static("public"));
+app.use(passport.initialize());
 
+app.use("/auth", oauthRoutes);
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
 app.use("/user", userRouter); // route handle user login(post) and sign up(post)
 app.use("/url", urlRouter); // route handle generate(post) new shorturl and get analytics of short url

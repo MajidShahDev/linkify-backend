@@ -2,6 +2,106 @@ import { validationResult } from "express-validator";
 import { signup, login } from "../services/user.service.js";
 import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
 
+export async function handleUserSignup(req, res) {
+  const errors = validationResult(req);
+  // console.log(errors.array());
+
+  if (!errors.isEmpty()) {
+    const fieldErrors = {};
+
+    errors.array().forEach((err) => {
+      if (!fieldErrors[err.path]) {
+        fieldErrors[err.path] = [];
+      }
+      fieldErrors[err.path].push(err.msg);
+    });
+
+    return res.status(400).render("signup", {
+      errors: fieldErrors,
+      oldInput: {
+        name: req.body.name || "",
+        email: req.body.email || "",
+      },
+    });
+  }
+
+  try {
+    const { name, email, password } = req.body;
+    const user = await signup({ name, email, password });
+    await handleSendVerificationEmail(user);
+    return res.render("verify-email", {
+      message: "Signup successful!",
+      error: null,
+      info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
+    });
+  } catch (err) {
+    return res.status(400).render("signup", {
+      errors: {
+        email: [err.message], // always an array
+      },
+      oldInput: {
+        name: req.body.name || "",
+        email: req.body.email || "",
+      },
+    });
+  }
+}
+
+export async function handleUserLogin(req, res) {
+  const errors = validationResult(req);
+
+  // 1️⃣ Validation errors
+  if (!errors.isEmpty()) {
+    const fieldErrors = {};
+    errors.array().forEach((err) => {
+      if (!fieldErrors[err.path]) {
+        fieldErrors[err.path] = [];
+      }
+      fieldErrors[err.path].push(err.msg);
+    });
+
+    return res.status(400).render("auth/login", {
+      errors: fieldErrors,
+      oldInput: { email: req.body.email || "" },
+    });
+  }
+
+  // 2️⃣ Proceed with login
+  try {
+    const { email, password } = req.body;
+    const { token } = await login({ email, password }); // your login service
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      // sameSite: "lax", // "lax" works for local dev
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    }
+  );
+
+    return res.redirect("/");
+  } catch (err) {
+    // wrong credentials or other errors
+    return res.status(400).render("auth/login", {
+      errors: { general: [err.message] },
+      oldInput: { email: req.body.email || "" },
+    });
+  }
+}
+
+export function handleUserLogout(req, res) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    // sameSite: "lax",
+    path: "/", // must match login cookie
+  });
+    // res.redirect("https://accounts.google.com/logout");
+      return res.redirect("/login");
+}
+
+
 // async function handleUserSignup(req, res) {
 //   const errors = validationResult(req);
 //   // console.log(errors.array());
@@ -71,95 +171,6 @@ import { handleSendVerificationEmail } from "../controllers/verifyEmail.controll
 //   }
 // }
 
-export async function handleUserSignup(req, res) {
-  const errors = validationResult(req);
-  // console.log(errors.array());
-
-  if (!errors.isEmpty()) {
-    const fieldErrors = {};
-
-    errors.array().forEach((err) => {
-      if (!fieldErrors[err.path]) {
-        fieldErrors[err.path] = [];
-      }
-      fieldErrors[err.path].push(err.msg);
-    });
-
-    return res.status(400).render("signup", {
-      errors: fieldErrors,
-      oldInput: {
-        name: req.body.name || "",
-        email: req.body.email || "",
-      },
-    });
-  }
-
-  try {
-    const { name, email, password } = req.body;
-    const user = await signup({ name, email, password });
-    await handleSendVerificationEmail(user);
-    return res.render("verify-email", {
-      message: "Signup successful!",
-      error: null,
-      info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
-    });
-  } catch (err) {
-    return res.status(400).render("signup", {
-      errors: {
-        email: [err.message], // <-- always an array
-      },
-      oldInput: {
-        name: req.body.name || "",
-        email: req.body.email || "",
-      },
-    });
-  }
-}
-
-export async function handleUserLogin(req, res) {
-  const errors = validationResult(req);
-
-  // 1️⃣ Validation errors
-  if (!errors.isEmpty()) {
-    const fieldErrors = {};
-    errors.array().forEach((err) => {
-      if (!fieldErrors[err.path]) {
-        fieldErrors[err.path] = [];
-      }
-      fieldErrors[err.path].push(err.msg);
-    });
-
-    return res.status(400).render("auth/login", {
-      errors: fieldErrors,
-      oldInput: { email: req.body.email || "" },
-    });
-  }
-
-  // 2️⃣ Proceed with login
-  try {
-    const { email, password } = req.body;
-    const { token } = await login({ email, password }); // your login service
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-    });
-
-    return res.redirect("/");
-  } catch (err) {
-    // wrong credentials or other errors
-    return res.status(400).render("auth/login", {
-      errors: { general: [err.message] },
-      oldInput: { email: req.body.email || "" },
-    });
-  }
-}
-
-export function handleUserLogout(req, res) {
-  res.clearCookie("token");
-  return res.redirect("/login");
-}
 
 // const bcrypt = require("bcrypt");
 // const User = require("../models/user.model");
