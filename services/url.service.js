@@ -1,13 +1,41 @@
 import { nanoid } from "nanoid";
 import URL from "../models/url.model.js";
+import Counter from "../models/counter.model.js"
 import geoip from "geoip-lite";
+import { encodeShortId } from "../utils/base62.js";
 
 // Generate a new short URL
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   const shortId = nanoid(8);
+
+//   const urlEntry = await URL.create({
+//     shortId,
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return urlEntry;
+// }
+
 export async function createShortUrl(userId, originalUrl) {
   if (!originalUrl) throw new Error("URL is required");
 
-  const shortId = nanoid(8);
+  // 1️⃣ Get next auto-increment ID
+  const urlCounter = await Counter.findByIdAndUpdate(
+    { _id: "url" },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  );
 
+  const numericId = urlCounter.seq;
+
+  // 2️⃣ Encode ID into Base62 shortId
+  const shortId = encodeShortId(numericId);
+
+  // 3️⃣ Save to DB
   const urlEntry = await URL.create({
     shortId,
     redirectURL: originalUrl,
