@@ -2,11 +2,10 @@ import mongoose from "mongoose";
 
 const urlSchema = new mongoose.Schema(
   {
-    shortId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+     _id: {
+    type: Number,   // IMPORTANT
+    required: true
+  },
     redirectURL: {
       type: String,
       required: true,
@@ -14,7 +13,7 @@ const urlSchema = new mongoose.Schema(
     clicks: {
       type: Number,
       default: 0,
-      index: true, // 🔥 important for sorting
+      index: true, //  important for sorting
     },
     clicks24h: {
       type: Number,
