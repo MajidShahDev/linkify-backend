@@ -1,8 +1,9 @@
 import { nanoid } from "nanoid";
 import URL from "../models/url.model.js";
-import Counter from "../models/counter.model.js"
+import Counter from "../models/counter.model.js";
 import geoip from "geoip-lite";
-import { encodeShortId } from "../utils/base62.js";
+// import { encodeShortId } from "../utils/base62.js";
+import { encodeShortId, decodeShortId } from "../utils/base62.js";
 
 // Generate a new short URL
 // export async function createShortUrl(userId, originalUrl) {
@@ -20,39 +21,108 @@ import { encodeShortId } from "../utils/base62.js";
 //   return urlEntry;
 // }
 
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   // 1️⃣ Get next auto-increment ID
+//   const urlCounter = await Counter.findByIdAndUpdate(
+//     { _id: "url" },
+//     { $inc: { seq: 1 } },
+//     { upsert: true, new: true }
+//   );
+
+//   const numericId = urlCounter.seq;
+
+//   // 2️⃣ Encode ID into Base62 shortId
+//   const shortId = encodeShortId(numericId);
+
+//   // 3️⃣ Save to DB
+//   const urlEntry = await URL.create({
+//     shortId,
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return urlEntry;
+// }
+
+// Create a short URL
 export async function createShortUrl(userId, originalUrl) {
   if (!originalUrl) throw new Error("URL is required");
 
-  // 1️⃣ Get next auto-increment ID
+  // Increment the counter to get a unique sequential DB id
   const urlCounter = await Counter.findByIdAndUpdate(
     { _id: "url" },
     { $inc: { seq: 1 } },
-    { upsert: true, new: true }
+    { new: true, upsert: true }
   );
+  const dbId = urlCounter.seq;
 
-  const numericId = urlCounter.seq;
+  // Encode DB id → shortId
+  const shortId = encodeShortId(dbId);
+  console.log(shortId);
 
-  // 2️⃣ Encode ID into Base62 shortId
-  const shortId = encodeShortId(numericId);
-
-  // 3️⃣ Save to DB
+  // Store only the DB id and original URL
   const urlEntry = await URL.create({
-    shortId,
+    _id: dbId, 
     redirectURL: originalUrl,
     visitHistory: [],
     createdBy: userId,
   });
 
-  return urlEntry;
+  return { ...urlEntry.toObject(), shortId }; // return shortId for API
 }
 
 // Get URL by shortId and record visit
+// export async function recordVisit(shortId, req) {
+//   const ip =
+//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//   const geo = geoip.lookup(ip); // returns country, city, region, etc.
+//   const entry = await URL.findOneAndUpdate(
+//     { shortId },
+//     {
+//       $inc: { clicks: 1 },
+//       $push: {
+//         visitHistory: {
+//           timestamp: Date.now(),
+//           ipAddress: req.ip,
+//           userAgent: req.get("User-Agent"),
+//           referrer: req.get("Referrer") || "Direct",
+//           location: geo
+//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+//             : "Unknown",
+//         },
+//       },
+//     },
+//     { new: true }
+//   );
+
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return entry;
+// }
+
+// Get URL by shortId and record visit
 export async function recordVisit(shortId, req) {
+  // Decode shortId → DB id
+  const dbId = decodeShortId(shortId);
+  console.log(typeof dbId);
+  console.log("shortId:", shortId);
+  console.log("decoded dbId:", dbId);
+
+  for (let i = 1; i <= 10; i++) {
+    const s = encodeShortId(i);
+    const d = decodeShortId(s);
+    console.log(i, s, d);
+  }
+  // Fetch URL entry by _id
   const ip =
     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  const geo = geoip.lookup(ip); // returns country, city, region, etc.
-  const entry = await URL.findOneAndUpdate(
-    { shortId },
+  const geo = geoip.lookup(ip);
+
+  const entry = await URL.findByIdAndUpdate(
+    dbId,
     {
       $inc: { clicks: 1 },
       $push: {
@@ -69,6 +139,7 @@ export async function recordVisit(shortId, req) {
     },
     { new: true }
   );
+  console.log("entry:", entry);
 
   if (!entry) throw new Error("Short URL not found");
 
@@ -122,7 +193,8 @@ export async function recordVisit(shortId, req) {
 // }
 
 export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
-  const url = await URL.findOne({ shortId }, "visitHistory"); // only need visitHistory
+  const dbId = decodeShortId(shortId);
+  const url = await URL.findById(dbId, "visitHistory"); // only need visitHistory
 
   if (!url) throw new Error("Not found");
 
@@ -131,13 +203,19 @@ export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
 
   if (timeRange === "24h") {
     const last24h = new Date(now - 24 * 60 * 60 * 1000);
-    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last24h);
+    filteredVisits = filteredVisits.filter(
+      (visit) => visit.timestamp >= last24h
+    );
   } else if (timeRange === "7d") {
     const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
-    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last7d);
+    filteredVisits = filteredVisits.filter(
+      (visit) => visit.timestamp >= last7d
+    );
   } else if (timeRange === "30d") {
     const last30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
-    filteredVisits = filteredVisits.filter(visit => visit.timestamp >= last30d);
+    filteredVisits = filteredVisits.filter(
+      (visit) => visit.timestamp >= last30d
+    );
   }
 
   const totalClicks = filteredVisits.length;
@@ -150,14 +228,14 @@ export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
     totalClicks,
     analytics: paginatedVisits,
     currentPage: page,
-    totalPages
+    totalPages,
   };
 }
 
-
 // Delete URL
 export async function deleteShortUrl(userId, shortId) {
-  const entry = await URL.findOne({ shortId });
+  const dbId = decodeShortId(shortId);
+  const entry = await URL.findById(dbId);
   if (!entry) throw new Error("Short URL not found");
 
   // Only creator can delete
@@ -165,7 +243,7 @@ export async function deleteShortUrl(userId, shortId) {
     throw new Error("You are not allowed to delete this URL");
   }
 
-  await URL.deleteOne({ shortId });
+  await URL.deleteOne({ _id: dbId });
 
   return shortId;
 }
@@ -173,8 +251,8 @@ export async function deleteShortUrl(userId, shortId) {
 // Edit original URL
 export async function editOriginalUrl(userId, shortId, newUrl) {
   if (!newUrl) throw new Error("New URL is required");
-
-  const entry = await URL.findOne({ shortId });
+  const dbId = decodeShortId(shortId);
+  const entry = await URL.findById(dbId);
   if (!entry) throw new Error("Short URL not found");
 
   // Only creator can edit
@@ -213,11 +291,18 @@ export async function getHomePageData(user, query) {
     ""
   );
 
+  let decodedId;
+  try {
+    decodedId = decodeShortId(shortIdSearch); // shortIdSearch extracted from query
+  } catch {
+    decodedId = null;
+  }
+
   const filter = {
     createdBy: user._id,
     $or: [
       { redirectURL: { $regex: escapedSearch, $options: "i" } },
-      { shortId: { $regex: shortIdSearch, $options: "i" } },
+      ...(decodedId ? [{ _id: decodedId }] : []),
     ],
   };
 
@@ -250,6 +335,7 @@ export async function getHomePageData(user, query) {
   const displayUrls = allUrls.map((url) => ({
     ...url._doc,
     redirectURL: unescapeUrl(url.redirectURL),
+    shortId: encodeShortId(url._id),
   }));
 
   const totalPages = Math.ceil(totalUrls / limit);
