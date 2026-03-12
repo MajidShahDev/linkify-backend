@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 const secretKey = process.env.JWT_SECRET;
 
-export function setUser(user) {
+export function generateToken(user) {
   const payload = {
     _id: user._id,
     role: user.role,
@@ -12,7 +12,7 @@ export function setUser(user) {
   return jwt.sign(payload, secretKey);
 }
 
-export function getUser(token) {
+export function verifyToken(token) {
   if (!token) return null;
   try {
     return jwt.verify(token, secretKey);

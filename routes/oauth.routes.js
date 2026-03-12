@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "../config/passport.js";
-import { setUser } from "../services/auth.service.js";
+import { generateToken } from "../services/auth.service.js";
 import {
   generateOAuthState,
   verifyOAuthState,
@@ -22,10 +22,10 @@ router.get(
   verifyOAuthState,
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    const token = setUser(req.user);
+    const token = generateToken(req.user);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     });
     res.redirect("/");
@@ -118,7 +118,7 @@ export default router;
 //   "/google/callback",
 //   passport.authenticate("google", { session: false }),
 //   (req, res) => {
-//     const token = setUser(req.user);
+//     const token = generateToken(req.user);
 
 //     res.cookie("token", token, {
 //       httpOnly: true, // prevents JS from reading it (good)

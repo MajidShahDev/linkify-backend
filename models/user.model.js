@@ -21,8 +21,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["NORMAL", "ADMIN"],
-      default: "NORMAL",
+      enum: ["USER", "ADMIN"],
+      default: "USER",
     },
 
     // Fields for forgot-password functionality

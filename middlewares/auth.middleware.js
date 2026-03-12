@@ -1,4 +1,4 @@
-import { getUser } from "../services/auth.service.js";
+import { verifyToken } from "../services/auth.service.js";
 
 // reads token → loads user → attaches to req
 // tryAuthenticateUser
@@ -9,13 +9,12 @@ export function tryAuthenticateUser(req, res, next) {
   //               // This ensures that if there is no token or invalid token after, req.user is always defined.
   const userToken = req.cookies?.token; //
   if (!userToken) return next();
-  const user = getUser(userToken);
+  const user = verifyToken(userToken);
   req.user = user;
   return next();
 }
 
-
-export function restrictTo(roles = ["NORMAL", "ADMIN"]) {
+export function restrictTo(roles = ["USER", "ADMIN"]) {
   return function (req, res, next) {
     if (!req.user) return res.redirect("/login");
     if (!roles.includes(req.user.role)) return res.end("UnAuthorized");

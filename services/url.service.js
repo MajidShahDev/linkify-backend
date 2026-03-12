@@ -107,15 +107,12 @@ export async function createShortUrl(userId, originalUrl) {
 export async function recordVisit(shortId, req) {
   // Decode shortId → DB id
   const dbId = decodeShortId(shortId);
-  console.log(typeof dbId);
-  console.log("shortId:", shortId);
-  console.log("decoded dbId:", dbId);
 
-  for (let i = 1; i <= 10; i++) {
-    const s = encodeShortId(i);
-    const d = decodeShortId(s);
-    console.log(i, s, d);
-  }
+  // for (let i = 1; i <= 10; i++) {
+  //   const s = encodeShortId(i);
+  //   const d = decodeShortId(s);
+  //   console.log(i, s, d);
+  
   // Fetch URL entry by _id
   const ip =
     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -139,7 +136,6 @@ export async function recordVisit(shortId, req) {
     },
     { new: true }
   );
-  console.log("entry:", entry);
 
   if (!entry) throw new Error("Short URL not found");
 
