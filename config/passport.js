@@ -1,7 +1,7 @@
 import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
 import User from "../models/user.model.js";
-// import { setUser } from "../services/auth.service.js";
+// import { generateToken } from "../services/auth.service.js";
 
 //Configuration = setup, settings, preparation.
 // Think of configuration like assembling a tool before using it:
