@@ -73,7 +73,7 @@ router.get("/qr/:shortId", async (req, res) => {
 
 //   // Render dashboard
 //   res.render('dashboard', { 
-//     baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+//     baseUrl: process.env.BASE_URL || 'http://localhost:8081',
 //     totalUrls,
 //     totalClicks,
 //     activity: { labels, data }  // Only send chart data, no recentUrls
@@ -128,7 +128,7 @@ router.get('/dashboard', async (req, res) => {
   const data = sortedDates.map(d => clicksByDate[d]);
 
   res.render('dashboard', {
-    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    baseUrl: process.env.BASE_URL || 'http://localhost:8081',
     totalUrls,
     totalClicks,
     activity: { labels, data },

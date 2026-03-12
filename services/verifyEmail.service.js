@@ -30,7 +30,7 @@ export async function sendVerificationEmail(email, token) {
     },
   });
 
-  const verifyUrl = `http://localhost:8081/verify-email/${token}`;
+  const verifyUrl = `${process.env.BASE_URL}/verify-email/${token}`;
 
   await transporter.sendMail({
     from: `"Linkify App" <${process.env.EMAIL_USER}>`,

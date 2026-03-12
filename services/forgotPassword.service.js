@@ -41,7 +41,7 @@ export async function sendResetEmail(email, token) {
     else console.log("SMTP server ready to send emails");
   });
 
-  const resetUrl = `http://localhost:8081/reset-password/${token}`;
+  const resetUrl = `${process.env.BASE_URL}/reset-password/${token}`;
 
   await transporter.sendMail({
     from: `"Linkify App" <${process.env.EMAIL_USER}>`,
