@@ -30,10 +30,11 @@ export async function handleCreateNewShortUrl(req, res) {
     // ?created=shortid // short id is passed as query parameter
   } catch (err) {
     return res.status(400).render("home", {
+      ...data,
       errors: [err.message],
       oldInput: { url: req.body.url },
+      search: (req.query.search || "").trim(),
       urls: await URL.find({ createdBy: req.user._id }),
-      search,
     });
   }
 }
@@ -50,15 +51,7 @@ export async function handleRedirectToOrignalURL(req, res) {
 }
 
 // Get analytics
-// export async function handleGetAnalytics(req, res) {
-//   try {
-//     const analytics = await getAnalytics(req.params.shortId);
-//     return res.json(analytics);
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(404).json({ error: err.message });
-//   }
-// }
+
 
 // export async function handleGetAnalytics(req, res) {
 //   try {

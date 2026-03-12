@@ -16,7 +16,7 @@ export async function handleUserSignup(req, res) {
       fieldErrors[err.path].push(err.msg);
     });
 
-    return res.status(400).render("signup", {
+    return res.status(400).render("auth/signup", {
       errors: fieldErrors,
       oldInput: {
         name: req.body.name || "",
@@ -35,7 +35,7 @@ export async function handleUserSignup(req, res) {
       info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
     });
   } catch (err) {
-    return res.status(400).render("signup", {
+    return res.status(400).render("auth/signup", {
       errors: {
         email: [err.message], // always an array
       },
@@ -73,12 +73,11 @@ export async function handleUserLogin(req, res) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      // sameSite: "lax", // "lax" works for local dev
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-    }
-  );
+    });
 
     return res.redirect("/");
   } catch (err) {
@@ -93,14 +92,13 @@ export async function handleUserLogin(req, res) {
 export function handleUserLogout(req, res) {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    // sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     path: "/", // must match login cookie
   });
-    // res.redirect("https://accounts.google.com/logout");
-      return res.redirect("/login");
+  // res.redirect("https://accounts.google.com/logout");
+  return res.redirect("/login");
 }
-
 
 // async function handleUserSignup(req, res) {
 //   const errors = validationResult(req);
@@ -171,10 +169,9 @@ export function handleUserLogout(req, res) {
 //   }
 // }
 
-
 // const bcrypt = require("bcrypt");
 // const User = require("../models/user.model");
-// const { setUser } = require("../service/auth.service");
+// const { generateToken } = require("../service/auth.service");
 
 // async function handleUserSignup(req, res) {
 //   try {
@@ -210,7 +207,7 @@ export function handleUserLogout(req, res) {
 //       return res.render("login", { error: "Invalid email or password" });
 //     }
 
-//     const token = setUser(user);
+//     const token = generateToken(user);
 //     res.cookie("token", token, {
 //       httpOnly: true,
 //       secure: process.env.NODE_ENV === "production",

@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
-import { setUser } from "./auth.service.js"; // adjust path
-
+import { generateToken } from "./auth.service.js"; // adjust path
 
 // Signup logic
 export async function signup({ name, email, password }) {
@@ -33,7 +32,6 @@ export async function login({ email, password }) {
     throw new Error("Invalid email or password");
   }
 
-  const token = setUser(user);
+  const token = generateToken(user);
   return { user, token };
 }
-

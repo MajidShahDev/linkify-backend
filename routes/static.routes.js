@@ -52,12 +52,17 @@ router.get("/verify-email", async (req, res) => {
 
 router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
   const allUrls = await URL.find({});
+  const data = await getHomePageData(req.user, req.query);
   return res.render("home", {
+    ...data,
     urls: allUrls,
+    id: req.query.created || null,
+    errors: {},
+    oldInput: {},
   });
 });
 
-router.get("/", restrictTo(["NORMAL","ADMIN"]), async (req,res)=>{
+router.get("/", restrictTo(["USER", "ADMIN"]), async (req, res) => {
   const data = await getHomePageData(req.user, req.query);
   res.render("home", {
     ...data,
@@ -67,7 +72,6 @@ router.get("/", restrictTo(["NORMAL","ADMIN"]), async (req,res)=>{
   });
 });
 
-
 router.get("/create-link", async (req, res) => {
   return res.render("create-link", {
     message: null,
@@ -76,7 +80,7 @@ router.get("/create-link", async (req, res) => {
   });
 });
 
-// router.get("/links", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+// router.get("/links", restrictTo(["USER", "ADMIN"]), async (req, res) => {
 //   // if(!req.user) return res.redirect('/login');
 //   const allUrls = await URL.find({ createdBy: req.user._id });
 //   return res.render("links", {
@@ -92,10 +96,7 @@ router.get("/upload", async (req, res) => {
 
 export default router;
 
-
-
-
-// router.get("/", restrictTo(["NORMAL", "ADMIN"]), async (req, res) => {
+// router.get("/", restrictTo(["USER", "ADMIN"]), async (req, res) => {
 //   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
 
 //   const page = parseInt(req.query.page) || 1;

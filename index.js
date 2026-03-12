@@ -2,7 +2,7 @@
 import "dotenv/config"; // automatically loads .env
 import "./cronJobs/updateClicks.js";
 import express from "express";
-import connectMongoDb from "./connection.js";
+import connectMongoDb from "./config/db.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import path from "path";
