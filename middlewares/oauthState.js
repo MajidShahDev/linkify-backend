@@ -9,7 +9,7 @@ export function generateOAuthState(req, res, next) {
       process.env.STATE_SECRET,
       { expiresIn: "5m" }
     );
-      console.log("oauth state generated successfully", req.oauthState);
+      // console.log("oauth state generated successfully", req.oauthState);
     next();
   } catch (err) {
     next(err);

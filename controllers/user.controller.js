@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import { signup, login } from "../services/user.service.js";
 import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
+import User from "../models/user.model.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -29,10 +30,14 @@ export async function handleUserSignup(req, res) {
     const { name, email, password } = req.body;
     const user = await signup({ name, email, password });
     await handleSendVerificationEmail(user);
-    return res.render("verify-email", {
+    return res.render("auth/login", {
       message: "Signup successful!",
-      error: null,
+      errors: null,
       info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
+      oldInput: {
+        name: "",
+        email: req.body.email || "",
+      },
     });
   } catch (err) {
     return res.status(400).render("auth/signup", {
@@ -69,6 +74,27 @@ export async function handleUserLogin(req, res) {
   // 2️⃣ Proceed with login
   try {
     const { email, password } = req.body;
+    
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).render("auth/login", {
+        errors: { general: ["Invalid email or password"] },
+        oldInput: { email },
+      });
+    }
+    
+    if (user.provider === "google" || user.password === null) {
+      return res.status(400).render("auth/login", {
+        errors: {
+          general: [
+            "You signed up using Google. Please login with Google first.",
+          ],
+        },
+        oldInput: { email },
+      });
+    }
+
     const { token } = await login({ email, password }); // your login service
 
     res.cookie("token", token, {
