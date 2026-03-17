@@ -23,7 +23,11 @@ export async function handleCreateNewShortUrl(req, res) {
   }
 
   try {
-    const urlEntry = await createShortUrl(req.user._id, req.body.url);
+    const urlEntry = await createShortUrl(
+      req.user._id,
+      req.body.url,
+      req.body.expiresAt
+    );
 
     // PRG
     return res.redirect("/?created=" + urlEntry.shortId);
@@ -32,7 +36,7 @@ export async function handleCreateNewShortUrl(req, res) {
     return res.status(400).render("home", {
       ...data,
       errors: [err.message],
-      oldInput: { url: req.body.url },
+      oldInput: { url: req.body.url, expiresAt: req.body.expiresAt },
       search: (req.query.search || "").trim(),
       urls: await URL.find({ createdBy: req.user._id }),
     });
@@ -51,7 +55,6 @@ export async function handleRedirectToOrignalURL(req, res) {
 }
 
 // Get analytics
-
 
 // export async function handleGetAnalytics(req, res) {
 //   try {
@@ -107,15 +110,13 @@ export async function handleGetAnalytics(req, res) {
       ...analyticsData,
       shortId,
       baseUrl,
-      timeRange
+      timeRange,
     });
-
   } catch (err) {
     console.error(err.message);
     return res.status(404).send("Short URL not found");
   }
 }
-
 
 // Delete URL
 export async function handleDeleteShortUrl(req, res) {
