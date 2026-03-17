@@ -48,30 +48,70 @@ import { encodeShortId, decodeShortId } from "../utils/base62.js";
 // }
 
 // Create a short URL
-export async function createShortUrl(userId, originalUrl) {
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   // Increment the counter to get a unique sequential DB id
+//   const urlCounter = await Counter.findByIdAndUpdate(
+//     { _id: "url" },
+//     { $inc: { seq: 1 } },
+//     { new: true, upsert: true }
+//   );
+//   const dbId = urlCounter.seq;
+
+//   // Encode DB id → shortId
+//   const shortId = encodeShortId(dbId);
+//   console.log(shortId);
+
+//   // Store only the DB id and original URL
+//   const urlEntry = await URL.create({
+//     _id: dbId, 
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return { ...urlEntry.toObject(), shortId }; // return shortId for API
+// }
+
+export async function createShortUrl(userId, originalUrl, expiresAt) {
   if (!originalUrl) throw new Error("URL is required");
 
-  // Increment the counter to get a unique sequential DB id
+  let expiryDate = null;
+
+  // Validate expiry
+  if (expiresAt) {
+    const date = new Date(expiresAt);
+
+    if (date <= new Date()) {
+      throw new Error("Expiry date must be in the future");
+    }
+
+    expiryDate = date;
+  }
+
+  // Increment counter
   const urlCounter = await Counter.findByIdAndUpdate(
     { _id: "url" },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
+
   const dbId = urlCounter.seq;
 
-  // Encode DB id → shortId
+  // Generate shortId
   const shortId = encodeShortId(dbId);
-  console.log(shortId);
 
-  // Store only the DB id and original URL
+  // Save URL
   const urlEntry = await URL.create({
-    _id: dbId, 
+    _id: dbId,
     redirectURL: originalUrl,
     visitHistory: [],
     createdBy: userId,
+    expiresAt: expiryDate
   });
 
-  return { ...urlEntry.toObject(), shortId }; // return shortId for API
+  return { ...urlEntry.toObject(), shortId };
 }
 
 // Get URL by shortId and record visit
@@ -104,43 +144,85 @@ export async function createShortUrl(userId, originalUrl) {
 // }
 
 // Get URL by shortId and record visit
+// export async function recordVisit(shortId, req) {
+//   // Decode shortId → DB id
+//   const dbId = decodeShortId(shortId);
+
+//   // for (let i = 1; i <= 10; i++) {
+//   //   const s = encodeShortId(i);
+//   //   const d = decodeShortId(s);
+//   //   console.log(i, s, d);
+  
+//   // Fetch URL entry by _id
+//   const ip =
+//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//   const geo = geoip.lookup(ip);
+
+//   const entry = await URL.findByIdAndUpdate(
+//     dbId,
+//     {
+//       $inc: { clicks: 1 },
+//       $push: {
+//         visitHistory: {
+//           timestamp: Date.now(),
+//           ipAddress: req.ip,
+//           userAgent: req.get("User-Agent"),
+//           referrer: req.get("Referrer") || "Direct",
+//           location: geo
+//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+//             : "Unknown",
+//         },
+//       },
+//     },
+//     { new: true }
+//   );
+
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return entry;
+// }
+
 export async function recordVisit(shortId, req) {
   // Decode shortId → DB id
   const dbId = decodeShortId(shortId);
 
-  // for (let i = 1; i <= 10; i++) {
-  //   const s = encodeShortId(i);
-  //   const d = decodeShortId(s);
-  //   console.log(i, s, d);
-  
-  // Fetch URL entry by _id
+  // Get client IP
   const ip =
     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
   const geo = geoip.lookup(ip);
 
-  const entry = await URL.findByIdAndUpdate(
-    dbId,
-    {
-      $inc: { clicks: 1 },
-      $push: {
-        visitHistory: {
-          timestamp: Date.now(),
-          ipAddress: req.ip,
-          userAgent: req.get("User-Agent"),
-          referrer: req.get("Referrer") || "Direct",
-          location: geo
-            ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
-            : "Unknown",
-        },
-      },
-    },
-    { new: true }
-  );
+  // First find the URL
+  const entry = await URL.findById(dbId);
 
-  if (!entry) throw new Error("Short URL not found");
+  if (!entry) {
+    throw new Error("Short URL not found");
+  }
+
+  // Check expiry
+  if (entry.expiresAt && entry.expiresAt < new Date()) {
+    throw new Error("Link expired");
+  }
+
+  // Record visit
+  entry.clicks += 1;
+
+  entry.visitHistory.push({
+    timestamp: Date.now(),
+    ipAddress: ip,
+    userAgent: req.get("User-Agent"),
+    referrer: req.get("Referrer") || "Direct",
+    location: geo
+      ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+      : "Unknown",
+  });
+
+  await entry.save();
 
   return entry;
 }
+
+
 
 // Get analytics
 // export async function getAnalytics(shortId) {

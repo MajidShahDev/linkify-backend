@@ -2,13 +2,17 @@ import mongoose from "mongoose";
 
 const urlSchema = new mongoose.Schema(
   {
-     _id: {
-    type: Number,   // IMPORTANT
-    required: true
-  },
+    _id: {
+      type: Number, // IMPORTANT
+      required: true,
+    },
     redirectURL: {
       type: String,
       required: true,
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
     },
     clicks: {
       type: Number,

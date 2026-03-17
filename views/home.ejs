@@ -50,13 +50,43 @@
                                 <% }) %>
                         </ul>
                         <% } %>
+                            <div class="flex justify-between items-end mt-4">
 
-                            <button type="submit"
-                                class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer ">Generate
-                                Short Link</button>
+                                <button type="submit"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer">
+                                    Generate Short Link
+                                </button>
+
+                                <div class="flex gap-2">
+
+                                    <div class="relative inline-block w-55">
+                                        <select id="expiryOption" onchange="handleExpiryChange(this.value)"
+                                            class="p-2 pr-8 border border-gray-300 rounded hover:border-gray-400 outline-gray-400 appearance-none w-full">
+
+                                            <option value="">Expiry (Never)</option>
+                                            <option value="1">1 day</option>
+                                            <option value="7">7 days</option>
+                                            <option value="30">30 days</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+
+                                        <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                            <svg class="w-3.5 h-3.5 text-gray-800" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <input type="date" id="expiresAt" name="expiresAt" value="<%= oldInput ? oldInput.expiresAt : '' %>"
+                                        class="w-55 p-2 border border-gray-300 hover:border-gray-400 rounded outline-gray-400 hidden" />
+
+                                </div>
+                            </div>
                 </form>
 
-
+                <hr class="border-t border-gray-300 my-4">
                 <form method="get" action="/" class="mb-4 flex gap-2">
 
                     <input type="text" name="search" placeholder="Search URLs..." value="<%= search || '' %>"
@@ -106,7 +136,7 @@
                                 </th>
                                 <th class="w-20 px-3 py-4 text-center align-top font-semibold tracking-wide">Clicks</th>
                                 <th class="w-16 px-3 py-4 text-left align-top font-semibold tracking-wide">Action</th>
-                                <th class="w-28 px-4 py-4 text-left align-top font-semibold tracking-wide">Created</th>
+                                <th class="w-29 px-4 py-4 text-left align-top font-semibold tracking-wide">Created</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -372,6 +402,38 @@
 
         function closeQrModal() {
             document.getElementById("qrModal").classList.add("hidden");
+        }
+
+
+        function handleExpiryChange(value) {
+            const input = document.getElementById("expiresAt");
+
+            if (value === "custom") {
+                input.classList.remove("hidden");
+                input.value = "";
+                return;
+            }
+
+            if (!value) {
+                input.classList.add("hidden");
+                input.value = "";
+                return;
+            }
+
+            const days = parseInt(value);
+
+            const now = new Date();
+            now.setDate(now.getDate() + days);
+
+            // ✅ LOCAL date fix
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const day = String(now.getDate()).padStart(2, "0");
+
+            const local = `${year}-${month}-${day}`;
+
+            input.value = local;
+            input.classList.remove("hidden");
         }
 
 
