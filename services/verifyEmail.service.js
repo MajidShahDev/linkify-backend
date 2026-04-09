@@ -3,7 +3,6 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/user.model.js";
 
-
 // generate token + save
 export async function generateEmailVerificationToken(userId) {
   const token = crypto.randomBytes(32).toString("hex");
@@ -60,4 +59,3 @@ export async function verifyEmail(token) {
   await user.save();
   return user;
 }
-
