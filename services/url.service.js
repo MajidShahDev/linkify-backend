@@ -65,7 +65,7 @@ import { encodeShortId, decodeShortId } from "../utils/base62.js";
 
 //   // Store only the DB id and original URL
 //   const urlEntry = await URL.create({
-//     _id: dbId, 
+//     _id: dbId,
 //     redirectURL: originalUrl,
 //     visitHistory: [],
 //     createdBy: userId,
@@ -108,7 +108,7 @@ export async function createShortUrl(userId, originalUrl, expiresAt) {
     redirectURL: originalUrl,
     visitHistory: [],
     createdBy: userId,
-    expiresAt: expiryDate
+    expiresAt: expiryDate,
   });
 
   return { ...urlEntry.toObject(), shortId };
@@ -152,7 +152,7 @@ export async function createShortUrl(userId, originalUrl, expiresAt) {
 //   //   const s = encodeShortId(i);
 //   //   const d = decodeShortId(s);
 //   //   console.log(i, s, d);
-  
+
 //   // Fetch URL entry by _id
 //   const ip =
 //     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -195,13 +195,9 @@ export async function recordVisit(shortId, req) {
   // First find the URL
   const entry = await URL.findById(dbId);
 
-  if (!entry) {
-    throw new Error("Short URL not found");
-  }
-
-  // Check expiry
-  if (entry.expiresAt && entry.expiresAt < new Date()) {
-    throw new Error("Link expired");
+  // single defensive check
+  if (!entry || (entry.expiresAt && entry.expiresAt < new Date())) {
+    throw new Error("Invalid or Expired Link");
   }
 
   // Record visit
@@ -221,8 +217,6 @@ export async function recordVisit(shortId, req) {
 
   return entry;
 }
-
-
 
 // Get analytics
 // export async function getAnalytics(shortId) {
@@ -314,7 +308,7 @@ export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
 export async function deleteShortUrl(userId, shortId) {
   const dbId = decodeShortId(shortId);
   const entry = await URL.findById(dbId);
-  if (!entry) throw new Error("Short URL not found");
+  if (!entry) throw new Error("Invalid or Expired Link");
 
   // Only creator can delete
   if (entry.createdBy.toString() !== userId.toString()) {
@@ -331,7 +325,7 @@ export async function editOriginalUrl(userId, shortId, newUrl) {
   if (!newUrl) throw new Error("New URL is required");
   const dbId = decodeShortId(shortId);
   const entry = await URL.findById(dbId);
-  if (!entry) throw new Error("Short URL not found");
+  if (!entry) throw new Error("Invalid or Expired Link");
 
   // Only creator can edit
   if (entry.createdBy.toString() !== userId.toString()) {

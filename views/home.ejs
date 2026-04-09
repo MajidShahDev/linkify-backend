@@ -79,7 +79,8 @@
                                         </div>
                                     </div>
 
-                                    <input type="date" id="expiresAt" name="expiresAt" value="<%= oldInput ? oldInput.expiresAt : '' %>"
+                                    <input type="date" id="expiresAt" name="expiresAt"
+                                        value="<%= oldInput ? oldInput.expiresAt : '' %>"
                                         class="w-55 p-2 border border-gray-300 hover:border-gray-400 rounded outline-gray-400 hidden" />
 
                                 </div>
@@ -152,14 +153,22 @@
                                             class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
                                             alt="QR Code" title="QR Code" />
                                         <img src="/images/copy.svg"
-                                            class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
+                                            class="copyIcon w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
                                             data-url="<%= baseUrl %>/<%= url.shortId %>" alt="Copy URL" title="Copy" />
                                     </td>
                                     <td class="px-3 py-4 items-start align-top ">
-                                        <a href="<%= baseUrl %>/<%= url.shortId %>" target="_blank"
-                                            class="text-blue-600 no-underline wrap-break-word ">
-                                            <%= baseUrl %>/<%= url.shortId %>
-                                        </a>
+                                        <% const isExpired=url.expiresAt && new Date(url.expiresAt) < new Date(); %>
+
+                                            <a href="<%= baseUrl %>/<%= url.shortId %>" target="_blank"
+                                                class="text-blue-600 no-underline wrap-break-word <%= isExpired ? 'pointer-events-none opacity-50' : '' %>">
+
+                                                <%= baseUrl %>/<%= url.shortId %>
+
+                                                        <% if (isExpired) { %>
+                                                            (Expired)
+                                                            <% } %>
+
+                                            </a>
                                     </td>
                                     <td class="px-3 py-4 text-gray-400 rotate-45 relative bottom-3.5">↝</td>
                                     <td class="px-3 py-4  break-all whitespace-normal align-top max-w-112.5">
