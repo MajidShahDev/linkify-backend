@@ -6,8 +6,10 @@ const secretKey = process.env.JWT_SECRET;
 export function generateToken(user) {
   const payload = {
     _id: user._id,
-    role: user.role,
+    name: user.name,
     email: user.email,
+    profileImage: user.profileImage,
+    role: user.role,
   };
   return jwt.sign(payload, secretKey);
 }
