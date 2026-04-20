@@ -1,3 +1,4 @@
+import User from "../models/user.model.js";
 import { verifyToken } from "../services/auth.service.js";
 
 // reads token → loads user → attaches to req
@@ -11,6 +12,7 @@ export function tryAuthenticateUser(req, res, next) {
   if (!userToken) return next();
   const user = verifyToken(userToken);
   req.user = user;
+  // req.locals.user = user;
   return next();
 }
 
