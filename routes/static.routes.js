@@ -3,6 +3,7 @@ import URL from "../models/url.model.js";
 import { restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 import { getHomePageData } from "../services/url.service.js";
+import User from "../models/user.model.js";
 
 const router = express.Router();
 
@@ -90,8 +91,14 @@ router.get("/create-link", async (req, res) => {
 //   });
 // });
 
-router.get("/upload", async (req, res) => {
-  return res.render("upload");
+router.get("/profile", async (req, res) => {
+  const freshUser = await User.findById(req.user._id);
+
+  res.render("profile", {
+    user: freshUser,
+    error: req.query.error || null,
+    success: req.query.success || null,
+  });
 });
 
 export default router;
