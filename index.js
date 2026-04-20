@@ -8,7 +8,6 @@ import morgan from "morgan";
 import path from "path";
 import passport from "./config/passport.js";
 
-
 // import helmet from "helmet"; // security headers
 
 import urlRouter from "./routes/url.routes.js";
@@ -51,6 +50,10 @@ app.use(morgan("dev"));
 app.use(tryAuthenticateUser);
 app.use(express.static("public"));
 app.use(passport.initialize());
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
 
 app.use("/auth", oauthRoutes);
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)

@@ -2,6 +2,8 @@ import { validationResult } from "express-validator";
 import { signup, login } from "../services/user.service.js";
 import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
 import User from "../models/user.model.js";
+import fs from "fs";
+import path from "path";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -74,7 +76,7 @@ export async function handleUserLogin(req, res) {
   // 2️⃣ Proceed with login
   try {
     const { email, password } = req.body;
-    
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -83,7 +85,7 @@ export async function handleUserLogin(req, res) {
         oldInput: { email },
       });
     }
-    
+
     if (user.provider === "google" || user.password === null) {
       return res.status(400).render("auth/login", {
         errors: {
@@ -124,6 +126,43 @@ export function handleUserLogout(req, res) {
   });
   // res.redirect("https://accounts.google.com/logout");
   return res.redirect("/login");
+}
+
+export async function handleUploadProfileImage(req, res) {
+  try {
+    if (!req.file) {
+      return res.redirect("/profile?error=no_file");
+    }
+
+    const user = await User.findById(req.user._id);
+    console.log("PROFILE IMAGE:", user.profileImage);
+    // 1. Delete old image (if not default)
+    if (user.profileImage && user.profileImage !== "/images/default.svg") {
+      const oldImagePath = path.join(
+        process.cwd(),
+        "public",
+        user.profileImage
+      );
+
+      fs.unlink(oldImagePath, (err) => {
+        if (err) {
+          console.log("Old image delete error:", err.message);
+        } else {
+          console.log("Old image deleted successfully");
+        }
+      });
+    }
+
+    //  Save new image path
+    const newImagePath = `/uploads/profile/${req.file.filename}`;
+    user.profileImage = newImagePath;
+    await user.save();
+
+    return res.redirect("/profile?success=1");
+  } catch (err) {
+    console.log(err);
+    return res.redirect("/profile?error=server_error");
+  }
 }
 
 // async function handleUserSignup(req, res) {
