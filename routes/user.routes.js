@@ -8,7 +8,9 @@ import {
   handleUserSignup,
   handleUserLogin,
   handleUserLogout,
+  handleUploadProfileImage,
 } from "../controllers/user.controller.js";
+import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -46,5 +48,24 @@ router.post(
 );
 
 router.get("/logout", handleUserLogout);
+
+// router.post(
+//   "/upload-profile",
+//   upload.single("profileImage"),
+//   handleUploadProfileImage
+// );
+
+router.post(
+  "/upload-profile",
+  (req, res, next) => {
+    upload.single("profileImage")(req, res, function (err) {
+      if (err) {
+        return res.redirect(`/profile?error=${encodeURIComponent(err.message)}`);
+      }
+      next();
+    });
+  },
+  handleUploadProfileImage
+);
 
 export default router;

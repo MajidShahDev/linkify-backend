@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google"],
       default: "local",
     },
+    profileImage: {
+      type: String,
+      default: "/images/default.svg", // default image from server
+    },
   },
   { timestamps: true }
 );

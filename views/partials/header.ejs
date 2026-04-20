@@ -1,0 +1,59 @@
+<header class="flex justify-between items-center mb-6">
+
+    <!-- Logo -->
+    <a href="/" class="no-underline">
+        <h1 class="text-gray-800 text-2xl m-0">Linkify</h1>
+    </a>
+
+    <!-- Right Section -->
+    <div class="flex items-center gap-4">
+
+        <!-- User Info Card -->
+        <div class="user-dropdown relative">
+
+            <!-- Trigger -->
+            <div
+                class="dropdown-toggle cursor-pointer flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">
+
+                <!-- Avatar -->
+                <div class="rounded-full h-9 w-9 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <img src="<%= user.profileImage && user.profileImage !== 'undefined' ? user.profileImage : '/images/default.png' %>"
+                        class="w-full h-full object-cover object-center" />
+                </div>
+                <!-- Name + Email -->
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">
+                        <%= user?.name || 'Guest' %>
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        <%= user?.email || '' %>
+                    </p>
+                </div>
+
+                <img src="/images/ellipsis-v.svg" class="w-4 h-4" />
+
+            </div>
+
+            <!-- Dropdown -->
+            <div
+                class="menu hidden absolute right-0 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
+
+                <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Profile
+                </a>
+
+                <hr class="border-gray-200">
+
+                <form action="/user/logout" method="get">
+                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                        Logout
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
