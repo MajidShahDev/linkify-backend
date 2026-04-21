@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import path from "path";
 import passport from "./config/passport.js";
+import fs from "fs";
+import https from "https";
 
 // import helmet from "helmet"; // security headers
 
@@ -22,7 +24,7 @@ import oauthRoutes from "./routes/oauth.routes.js";
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 connectMongoDb(process.env.MONGO_URL)
   .then(() => console.log("MongoDb connected"))
@@ -64,9 +66,19 @@ app.use("/", forgotPasswordRouter);
 app.use("/", staticRouter); // route handle static home, signIn, signup page
 app.use("/", redirectRouter); // route handle redirect to orignalUrl from shortId.
 
-app.listen(PORT, () => {
-  console.log(`[${new Date().toISOString()}] Server running on port: ${PORT}`);
-  // console.log(`Express app server is started & listening on port: ${PORT}`);
+const options = {
+  key: fs.readFileSync("./ssl/key.pem"),
+  cert: fs.readFileSync("./ssl/cert.pem"),
+};
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`[${new Date().toISOString()}] HTTPS server running on port: ${PORT}`);
 });
+
+// console.log(`[${new Date().toISOString()}] HTTPS running at https://localhost:3000`);
+// app.listen(PORT, () => {
+  // console.log(`[${new Date().toISOString()}] Server running on port: ${PORT}`);
+//   // console.log(`Express app server is started & listening on port: ${PORT}`);
+// });
 
 // app.use("/url",restrictToLoggedInUserOnly ,urlRouter); // run restrictToLoggedInUserOnly for this route only
