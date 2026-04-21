@@ -339,7 +339,7 @@ export async function editOriginalUrl(userId, shortId, newUrl) {
 }
 
 export async function getHomePageData(user, query) {
-  const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+  const baseUrl = process.env.BASE_URL || "https://localhost:8081";
   const page = parseInt(query.page) || 1;
   const limit = 15;
   const skip = (page - 1) * limit;

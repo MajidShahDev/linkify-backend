@@ -104,7 +104,7 @@ export async function handleGetAnalytics(req, res) {
     const limit = 15;
 
     const analyticsData = await getAnalytics(shortId, timeRange, page, limit);
-    const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+    const baseUrl = process.env.BASE_URL || "https://localhost:8081";
 
     res.render("analytics", {
       ...analyticsData,
