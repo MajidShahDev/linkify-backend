@@ -128,7 +128,7 @@ router.get('/dashboard', async (req, res) => {
   const data = sortedDates.map(d => clicksByDate[d]);
 
   res.render('dashboard', {
-    baseUrl: process.env.BASE_URL || 'http://localhost:8081',
+    baseUrl: process.env.BASE_URL || 'https://localhost:8081',
     totalUrls,
     totalClicks,
     activity: { labels, data },
