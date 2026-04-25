@@ -4,6 +4,7 @@ import { restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 import { getHomePageData } from "../services/url.service.js";
 import User from "../models/user.model.js";
+import { csrfProtection, attachCsrfToken } from "../middlewares/csrf.middleware.js";
 
 const router = express.Router();
 
@@ -63,7 +64,7 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
   });
 });
 
-router.get("/", restrictTo(["USER", "ADMIN"]), async (req, res) => {
+router.get("/", csrfProtection, attachCsrfToken, restrictTo(["USER", "ADMIN"]),  async (req, res) => {
   const data = await getHomePageData(req.user, req.query);
   res.render("home", {
     ...data,

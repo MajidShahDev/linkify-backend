@@ -26,6 +26,7 @@
                 <% } %>
 
                     <form method="post" action="/url" class="mb-5">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                         <label class="block">
                             Paste Your Long URL Here
                             <input type="text" name="url" placeholder="https://example.com/long-url"
