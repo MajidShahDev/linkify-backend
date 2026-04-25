@@ -10,6 +10,7 @@ import {
   handleDeleteShortUrl,
   handleEditOriginalUrl,
 } from "../controllers/url.controller.js";
+import { csrfProtection } from "../middlewares/csrf.middleware.js";
 
 // fdsfdsdsfdsfdsfds
 const router = express.Router();
@@ -19,6 +20,7 @@ const router = express.Router();
 router.post(
   "/",
   createShortUrlLimiter,
+  csrfProtection,
   [
     body("url")
       .notEmpty()
@@ -31,8 +33,8 @@ router.post(
 
 // router.post("/", handleGenerateNewShortUrl);
 router.get("/analytics/:shortId",analyticsLimiter, handleGetAnalytics);
-router.delete("/:shortId", handleDeleteShortUrl);
-router.put("/:shortId", handleEditOriginalUrl);
+router.delete("/:shortId", csrfProtection, handleDeleteShortUrl);
+router.put("/:shortId", csrfProtection, handleEditOriginalUrl);
 
 
 router.get("/qr/:shortId", async (req, res) => {
