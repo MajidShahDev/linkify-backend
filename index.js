@@ -1,4 +1,3 @@
-// require("dotenv").config();
 import "dotenv/config"; // automatically loads .env
 import "./cronJobs/updateClicks.js";
 import express from "express";
@@ -9,8 +8,7 @@ import path from "path";
 import passport from "./config/passport.js";
 import fs from "fs";
 import https from "https";
-
-// import helmet from "helmet"; // security headers
+import helmet from "helmet"; 
 
 import urlRouter from "./routes/url.routes.js";
 import redirectRouter from "./routes/redirect.routes.js";
@@ -43,6 +41,19 @@ app.set("views", path.resolve("./views")); // setting views are in views directo
 //                               "views" is a predefined Express key to set the directory where template files live.
 //                                This tells Express where to look for files when using res.render().
 //                                // render = template file name // redirect = route/url
+
+app.disable('x-powered-by');
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  })
+);
 
 // Global Middlewares are attached to every route handlers middleware stack, as first middleware
 app.use(express.json());
