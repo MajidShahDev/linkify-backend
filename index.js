@@ -1,6 +1,7 @@
 import "dotenv/config"; // automatically loads .env
 import "./cronJobs/updateClicks.js";
 import "./config/crashHandlers.js";
+import "./config/instrument.js"; 
 import express from "express";
 import connectMongoDb from "./config/db.js";
 import cookieParser from "cookie-parser";
