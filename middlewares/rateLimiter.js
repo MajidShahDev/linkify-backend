@@ -12,7 +12,6 @@ export const generalAuthLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-
 // Login limiter (more strict)
 // export const loginLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,
@@ -66,16 +65,30 @@ export const passwordLimiter = rateLimit({
       message: null,
       error: null,
       errors: {
-        general: ["Too many password requests. Try again after 15 minutes."]
+        general: ["Too many password requests. Try again after 15 minutes."],
       },
       oldInput: { email: req.body?.email || "" },
     });
   },
 });
 
+export const emailOtpSendLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3, // max 2 OTP requests per IP
+  standardHeaders: true,
+  legacyHeaders: false,
 
-
-
+  handler: async (req, res) => {
+    return res.status(429).render("auth/verify-otp-email", {
+      message: null,
+      error: null,
+      errors: {
+        general: ["Too many OTP requests. Please try again after 10 minutes."],
+      },
+      info: null,
+    });
+  },
+});
 
 // Redirect limiter: 100–500 requests per minute
 export const redirectLimiter = rateLimit({

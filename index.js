@@ -1,7 +1,7 @@
 import "dotenv/config"; // automatically loads .env
 import "./cronJobs/updateClicks.js";
 import "./config/crashHandlers.js";
-import "./config/instrument.js"; 
+import "./config/instrument.js";
 import express from "express";
 import connectMongoDb from "./config/db.js";
 import cookieParser from "cookie-parser";
@@ -10,6 +10,7 @@ import path from "path";
 import passport from "./config/passport.js";
 import fs from "fs";
 import https from "https";
+import session from "express-session";
 import helmet from "helmet";
 
 import urlRouter from "./routes/url.routes.js";
@@ -20,6 +21,7 @@ import uploadRouter from "./routes/upload.routes.js";
 import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
 import verifyEmailRouter from "./routes/verifyEmail.routes.js";
 import oauthRoutes from "./routes/oauth.routes.js";
+import twoFARoutes from "./routes/2fa.routes.js"
 
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
@@ -72,12 +74,22 @@ app.use(tryAuthenticateUser);
 app.use(express.static("public"));
 app.use(passport.initialize());
 app.use(accessMiddleware);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
   next();
 });
 
 app.use("/auth", oauthRoutes);
+app.use("/auth", twoFARoutes);
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
 app.use("/user", userRouter); // route handle user login(post) and sign up(post)
 app.use("/url", urlRouter); // route handle generate(post) new shorturl and get analytics of short url
