@@ -1,7 +1,9 @@
 import { validationResult } from "express-validator";
 import { signup, login } from "../services/user.service.js";
 import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
+import { sendEmailOTP } from "../services/otpEmail.service.js";
 import User from "../models/user.model.js";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -57,9 +59,10 @@ export async function handleUserSignup(req, res) {
 export async function handleUserLogin(req, res) {
   const errors = validationResult(req);
 
-  // 1️⃣ Validation errors
+  // Validation errors
   if (!errors.isEmpty()) {
     const fieldErrors = {};
+
     errors.array().forEach((err) => {
       if (!fieldErrors[err.path]) {
         fieldErrors[err.path] = [];
@@ -73,7 +76,6 @@ export async function handleUserLogin(req, res) {
     });
   }
 
-  // 2️⃣ Proceed with login
   try {
     const { email, password } = req.body;
 
@@ -97,19 +99,46 @@ export async function handleUserLogin(req, res) {
       });
     }
 
-    const { token } = await login({ email, password }); // your login service
+    const result = await login({ email, password });
 
-    res.cookie("token", token, {
+    // ==========================
+    // 2FA REQUIRED
+    // ==========================
+    if (result.requires2FA) {
+      const otp = crypto.randomInt(100000, 999999).toString();
+
+      const user = result.user;
+
+      user.twoFactorCode = otp;
+      user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+      await user.save();
+
+      // Send OTP to email
+      await sendEmailOTP(user.email, otp);
+
+      // Save temporary login session
+      req.session.tempUserId = user._id;
+      req.session.otp = {
+        type: "email",
+      };
+
+      return res.redirect("/auth/verify-otp-email");
+    }
+
+    // ==========================
+    // NORMAL LOGIN
+    // ==========================
+    res.cookie("token", result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+      maxAge: 1000 * 60 * 60 * 24 * 30,
     });
 
     return res.redirect("/");
   } catch (err) {
-    // wrong credentials or other errors
     return res.status(400).render("auth/login", {
       errors: { general: [err.message] },
       oldInput: { email: req.body.email || "" },

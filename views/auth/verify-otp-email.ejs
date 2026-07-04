@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        p {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Verify OTP</h2>
+        
+        <% if (message) { %>
+                    <p style="color: green">
+                        <%= message %>
+                    </p>
+                    <% } %>
+
+        <p>Please enter the OTP sent to your Email</p>
+
+        <% if (errors && errors.general) { %>
+            <p style="color:red">
+                <%= errors.general[0] %>
+            </p>
+            <% } %>
+
+                
+
+
+                        <form method="POST" action="/auth/verify-otp">
+                            <input name="otp" placeholder="Enter OTP" required />
+                            <button type="submit">Verify OTP</button>
+                        </form>
+
+
+                        <form method="POST" action="/auth/resend-email-otp">
+                            <button type="submit">Resend OTP</button>
+
+                        </form>
+
+    </div>
+
+</body>
+
+</html>
