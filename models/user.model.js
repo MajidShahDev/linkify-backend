@@ -56,6 +56,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "/images/default.svg", // default image from server
     },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorCode: String,
+    twoFactorExpires: Date,
   },
   { timestamps: true }
 );

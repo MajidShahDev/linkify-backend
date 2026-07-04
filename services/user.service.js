@@ -31,6 +31,10 @@ export async function login({ email, password }) {
   if (!isMatch) {
     throw new Error("Invalid email or password");
   }
+// if 2fa enabled then stop here
+    if (user.twoFactorEnabled) {
+    return { requires2FA: true, user };
+  }
 
   const token = generateToken(user);
   return { user, token };
