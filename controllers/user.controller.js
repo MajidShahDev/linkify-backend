@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { handleSendEmailOTP } from "./2fa.controller.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -121,6 +122,7 @@ export async function handleUserLogin(req, res) {
       req.session.tempUserId = user._id;
       req.session.otp = {
         type: "email",
+        purpose: "login"
       };
 
       return res.redirect("/auth/verify-otp-email");
@@ -192,6 +194,19 @@ export async function handleUploadProfileImage(req, res) {
     console.log(err);
     return res.redirect("/profile?error=server_error");
   }
+}
+
+export async function requestToggle2FA(req, res) {
+  const user = await User.findById(req.user._id);
+
+  req.session.otp = {
+    type: "email",
+    purpose: user.twoFactorEnabled
+      ? "disable-2fa"
+      : "enable-2fa",
+  };
+
+  return handleSendEmailOTP(req, res);
 }
 
 // async function handleUserSignup(req, res) {

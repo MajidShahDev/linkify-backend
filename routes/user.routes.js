@@ -4,11 +4,13 @@ import {
   generalAuthLimiter,
   loginLimiter,
 } from "../middlewares/rateLimiter.js";
+import { restrictTo } from "../middlewares/auth.middleware.js"; 
 import {
   handleUserSignup,
   handleUserLogin,
   handleUserLogout,
   handleUploadProfileImage,
+  requestToggle2FA,
 } from "../controllers/user.controller.js";
 import upload from "../middlewares/upload.middleware.js";
 
@@ -66,6 +68,12 @@ router.post(
     });
   },
   handleUploadProfileImage
+);
+
+router.post(
+  "/toggle-2fa",
+  restrictTo(["USER", "ADMIN"]),
+  requestToggle2FA
 );
 
 export default router;
