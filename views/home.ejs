@@ -13,8 +13,8 @@
 
     <div class="container max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
         <%- include("partials/header", { user }) %>
-            
-            
+
+
 
             <% if (locals.id) { %>
                 <div class="generated bg-blue-100 border-l-4 border-blue-500 p-3 mb-4">
@@ -148,9 +148,9 @@
 
                                         </td>
                                         <td class="px-3 py-4 flex items-start gap-1 align-top ">
-                                            <img src="/images/qr-code.svg" onclick="openQr('<%= url.shortId %>')"
-                                                class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
-                                                alt="QR Code" title="QR Code" />
+                                            <img src="/images/qr-code.svg"
+                                                class="qrIcon w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
+                                                data-id="<%= url.shortId %>" alt="QR Code" title="QR Code" />
                                             <img src="/images/copy.svg"
                                                 class="copyIcon w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100 active:opacity-30"
                                                 data-url="<%= baseUrl %>/<%= url.shortId %>" alt="Copy URL"
@@ -197,13 +197,12 @@
                                         </td>
                                         <td class="px-3 py-4 align-top flex gap-2">
                                             <img src="/images/edit.svg"
-                                                class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
-                                                alt="Edit URL" title="Edit"
-                                                onclick="openEditModal('<%= url.shortId %>', '<%= url.redirectURL %>')" />
+                                                class="editIcon w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
+                                                data-id="<%= url.shortId %>" data-url="<%= url.redirectURL %>"
+                                                alt="Edit URL" title="Edit" />
                                             <img src="/images/trash.svg"
-                                                class="w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
-                                                alt="Delete URL" title="Delete"
-                                                onclick="openDeleteModal('<%= url.shortId %>')" />
+                                                class="deleteIcon w-5 h-5 cursor-pointer opacity-70 transition-transform duration-150 ease-in-out hover:scale-110 hover:opacity-100"
+                                                alt="Delete URL" title="Delete" data-id="<%= url.shortId %>" />
                                         </td>
                                         <td class="px-4 py-4  align-top text-gray-500">
                                             <!-- <%= url.createdAt ? new Date(url.createdAt).toLocaleString('en-US', {
@@ -289,166 +288,19 @@
 
                                     <img id="qrImage" class="mx-auto mb-4" />
 
-                                    <button onclick="closeQrModal()"
+                                    <button id="closeQrBtn"
                                         class="px-4 py-2 border rounded hover:bg-gray-200 active:bg-gray-300">
                                         Close
                                     </button>
                                 </div>
                             </div>
 
+                            <meta name="csrf-token" content="<%= csrfToken %>">
+
 
     </div>
 
-    <script>
-
-        // Edit Function
-        let editTargetId = null;
-
-        function openEditModal(shortId, currentUrl) {
-            editTargetId = shortId;
-            document.getElementById("editUrlInput").value = currentUrl;
-            document.getElementById("editModal").classList.remove("hidden");
-        }
-
-        function closeEditModal() {
-            editTargetId = null;
-            document.getElementById("editModal").classList.add("hidden");
-        }
-
-        document.getElementById("cancelEdit").onclick = closeEditModal;
-
-        document.getElementById("confirmEdit").onclick = async function () {
-            if (!editTargetId) return;
-
-            const newUrl = document.getElementById("editUrlInput").value.trim();
-            if (!newUrl) {
-                alert("URL cannot be empty");
-                return;
-            }
-
-            const res = await fetch(`/url/${editTargetId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ newUrl }),
-            });
-
-            if (res.ok) {
-                closeEditModal();
-                location.reload();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to update");
-            }
-        };
-
-        // Delete Function
-        let deleteTargetId = null;
-
-        function openDeleteModal(shortId) {
-            deleteTargetId = shortId;
-            document.getElementById("deleteModal").classList.remove("hidden");
-        }
-
-        function closeDeleteModal() {
-            deleteTargetId = null;
-            document.getElementById("deleteModal").classList.add("hidden");
-        }
-
-        document.getElementById("cancelDelete").onclick = closeDeleteModal;
-
-        document.getElementById("confirmDelete").onclick = async function () {
-            if (!deleteTargetId) return;
-
-            const res = await fetch(`/url/${deleteTargetId}`, {
-                method: "DELETE",
-            });
-
-            if (res.ok) {
-                closeDeleteModal();
-                location.reload();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete");
-            }
-        };
-
-        // Copy Icon Function
-        document.querySelectorAll(".copyIcon").forEach(icon => {
-            icon.addEventListener("click", () => {
-                const url = icon.dataset.url;
-
-                navigator.clipboard.writeText(url)
-                    .then(() => { })
-                    .catch(err => {
-                        console.error("Failed to copy: ", err);
-                        alert("Failed to copy URL");
-                    });
-            });
-        });
-
-        // Redirect Text Function
-        document.querySelectorAll(".redirectText").forEach(text => {
-            const btn = text.nextElementSibling;
-
-            if (text.scrollHeight > text.clientHeight) {
-                btn.classList.remove("hidden");
-            }
-
-            btn.addEventListener("click", () => {
-                text.classList.toggle("line-clamp-2");
-                btn.innerText = btn.innerText === "see more" ? "see less" : "see more";
-            });
-        });
-
-        // QR Code Function
-        function openQr(shortId) {
-            fetch(`url/qr/${shortId}`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById("qrImage").src = data.qr;
-                    document.getElementById("qrModal").classList.remove("hidden");
-                });
-        }
-
-        function closeQrModal() {
-            document.getElementById("qrModal").classList.add("hidden");
-        }
-
-
-        function handleExpiryChange(value) {
-            const input = document.getElementById("expiresAt");
-
-            if (value === "custom") {
-                input.classList.remove("hidden");
-                input.value = "";
-                return;
-            }
-
-            if (!value) {
-                input.classList.add("hidden");
-                input.value = "";
-                return;
-            }
-
-            const days = parseInt(value);
-
-            const now = new Date();
-            now.setDate(now.getDate() + days);
-
-            // ✅ LOCAL date fix
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, "0");
-            const day = String(now.getDate()).padStart(2, "0");
-
-            const local = `${year}-${month}-${day}`;
-
-            input.value = local;
-            input.classList.remove("hidden");
-        }
-
-
-
-    </script>
+    <script src="/js/home.js"></script>
     <script src="/js/dropdown.js"></script>
 
 </body>
