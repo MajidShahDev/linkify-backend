@@ -11,11 +11,9 @@ import {
   handleEditOriginalUrl,
 } from "../controllers/url.controller.js";
 import { csrfProtection } from "../middlewares/csrf.middleware.js";
+import RESERVED_ALIASES from "../utils/reservedAliases.js";
 
-// fdsfdsdsfdsfdsfds
 const router = express.Router();
-
-
 
 router.post(
   "/",
@@ -23,10 +21,29 @@ router.post(
   csrfProtection,
   [
     body("url")
+      .trim()
       .notEmpty()
       .withMessage("URL is required")
       .isURL({ require_protocol: true })
-      .withMessage("Please enter a valid URL with http:// or https://")
+      .withMessage("Please enter a valid URL with http:// or https://"),
+
+    body("customAlias")
+      .optional({ checkFalsy: true })
+      .trim()
+      .toLowerCase()
+      .isLength({ min: 3, max: 30 })
+      .withMessage("Custom short link must be between 3 and 30 characters.")
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage(
+        "Custom short link may contain only letters, numbers, hyphens (-), and underscores (_)."
+      )
+      .custom((normalizedAlias) => {
+        if (RESERVED_ALIASES.has(normalizedAlias)) {
+          throw new Error(`'${normalizedAlias}' is reserved. Please choose another custom short link.`);
+        }
+
+        return true;
+      }),
   ],
   handleCreateNewShortUrl
 );

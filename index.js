@@ -27,6 +27,7 @@ import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
 import accessMiddleware from "./middlewares/accessLogger.middleware.js";
 import errorMiddleware from "./middlewares/errorLogger.middleware.js";
+import { attachCsrfToken, csrfProtection } from "./middlewares/csrf.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -70,11 +71,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
 app.use(morgan("dev"));
-app.use(tryAuthenticateUser);
 app.use(express.static("public"));
-app.use(passport.initialize());
-app.use(accessMiddleware);
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret",
@@ -82,6 +79,11 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(passport.initialize());
+app.use(tryAuthenticateUser);
+app.use(accessMiddleware);
+app.use(csrfProtection)
+app.use(attachCsrfToken)
 
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
