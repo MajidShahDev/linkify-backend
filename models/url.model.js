@@ -10,6 +10,16 @@ const urlSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    customAlias: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+      minlength: 3,
+      maxlength: 30,
+      index: true,
+    },
     expiresAt: {
       type: Date,
       default: null,

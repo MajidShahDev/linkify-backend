@@ -64,12 +64,12 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
   });
 });
 
-router.get("/", csrfProtection, attachCsrfToken, restrictTo(["USER", "ADMIN"]),  async (req, res) => {
+router.get("/", restrictTo(["USER", "ADMIN"]),  async (req, res) => {
   const data = await getHomePageData(req.user, req.query);
   res.render("home", {
     ...data,
     id: req.query.created || null,
-    errors: {},
+    errors: [],
     oldInput: {},
   });
 });
