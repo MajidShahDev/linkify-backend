@@ -17,7 +17,7 @@ export async function handleCreateNewShortUrl(req, res) {
     return res.status(400).render("home", {
       ...data,
       errors: errors.array().map((err) => err.msg),
-      oldInput: { url: req.body.url },
+      oldInput: { url: req.body.url, customAlias: req.body.customAlias },
       search: (req.query.search || "").trim(),
     });
   }
@@ -26,7 +26,8 @@ export async function handleCreateNewShortUrl(req, res) {
     const urlEntry = await createShortUrl(
       req.user._id,
       req.body.url,
-      req.body.expiresAt
+      req.body.expiresAt,
+      req.body.customAlias
     );
 
     // PRG
@@ -36,7 +37,11 @@ export async function handleCreateNewShortUrl(req, res) {
     return res.status(400).render("home", {
       ...data,
       errors: [err.message],
-      oldInput: { url: req.body.url, expiresAt: req.body.expiresAt },
+      oldInput: {
+        url: req.body.url,
+        expiresAt: req.body.expiresAt,
+        customAlias: req.body.customAlias,
+      },
       search: (req.query.search || "").trim(),
       urls: await URL.find({ createdBy: req.user._id }),
     });
@@ -53,47 +58,6 @@ export async function handleRedirectToOrignalURL(req, res) {
     return res.status(404).send(err.message);
   }
 }
-
-// Get analytics
-
-// export async function handleGetAnalytics(req, res) {
-//   try {
-//     const analyticsData = await getAnalytics(req.params.shortId);
-//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-//     res.render("analytics", {
-//       ...analyticsData,
-//       shortId: req.params.shortId,
-//       baseUrl,
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(404).send("Short URL not found");
-//   }
-// }
-
-// export async function handleGetAnalytics(req, res) {
-//   try {
-//     const { shortId } = req.params;
-
-//     // ✅ Get time range from query string
-//     const timeRange = req.query.time || "all";
-
-//     const analyticsData = await getAnalytics(shortId, timeRange);
-
-//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-
-//     res.render("analytics", {
-//       ...analyticsData,
-//       shortId,
-//       baseUrl,
-//       timeRange
-//     });
-
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(404).send("Short URL not found");
-//   }
-// }
 
 export async function handleGetAnalytics(req, res) {
   try {
@@ -143,3 +107,44 @@ export async function handleEditOriginalUrl(req, res) {
     return res.status(status).json({ error: err.message });
   }
 }
+
+// Get analytics
+
+// export async function handleGetAnalytics(req, res) {
+//   try {
+//     const analyticsData = await getAnalytics(req.params.shortId);
+//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+//     res.render("analytics", {
+//       ...analyticsData,
+//       shortId: req.params.shortId,
+//       baseUrl,
+//     });
+//   } catch (err) {
+//     console.error(err.message);
+//     return res.status(404).send("Short URL not found");
+//   }
+// }
+
+// export async function handleGetAnalytics(req, res) {
+//   try {
+//     const { shortId } = req.params;
+
+//     // ✅ Get time range from query string
+//     const timeRange = req.query.time || "all";
+
+//     const analyticsData = await getAnalytics(shortId, timeRange);
+
+//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
+
+//     res.render("analytics", {
+//       ...analyticsData,
+//       shortId,
+//       baseUrl,
+//       timeRange
+//     });
+
+//   } catch (err) {
+//     console.error(err.message);
+//     return res.status(404).send("Short URL not found");
+//   }
+// }

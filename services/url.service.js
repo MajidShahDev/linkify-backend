@@ -4,82 +4,21 @@ import Counter from "../models/counter.model.js";
 import geoip from "geoip-lite";
 // import { encodeShortId } from "../utils/base62.js";
 import { encodeShortId, decodeShortId } from "../utils/base62.js";
+import RESERVED_ALIASES from "../utils/reservedAliases.js";
 
-// Generate a new short URL
-// export async function createShortUrl(userId, originalUrl) {
-//   if (!originalUrl) throw new Error("URL is required");
-
-//   const shortId = nanoid(8);
-
-//   const urlEntry = await URL.create({
-//     shortId,
-//     redirectURL: originalUrl,
-//     visitHistory: [],
-//     createdBy: userId,
-//   });
-
-//   return urlEntry;
-// }
-
-// export async function createShortUrl(userId, originalUrl) {
-//   if (!originalUrl) throw new Error("URL is required");
-
-//   // 1️⃣ Get next auto-increment ID
-//   const urlCounter = await Counter.findByIdAndUpdate(
-//     { _id: "url" },
-//     { $inc: { seq: 1 } },
-//     { upsert: true, new: true }
-//   );
-
-//   const numericId = urlCounter.seq;
-
-//   // 2️⃣ Encode ID into Base62 shortId
-//   const shortId = encodeShortId(numericId);
-
-//   // 3️⃣ Save to DB
-//   const urlEntry = await URL.create({
-//     shortId,
-//     redirectURL: originalUrl,
-//     visitHistory: [],
-//     createdBy: userId,
-//   });
-
-//   return urlEntry;
-// }
-
-// Create a short URL
-// export async function createShortUrl(userId, originalUrl) {
-//   if (!originalUrl) throw new Error("URL is required");
-
-//   // Increment the counter to get a unique sequential DB id
-//   const urlCounter = await Counter.findByIdAndUpdate(
-//     { _id: "url" },
-//     { $inc: { seq: 1 } },
-//     { new: true, upsert: true }
-//   );
-//   const dbId = urlCounter.seq;
-
-//   // Encode DB id → shortId
-//   const shortId = encodeShortId(dbId);
-//   console.log(shortId);
-
-//   // Store only the DB id and original URL
-//   const urlEntry = await URL.create({
-//     _id: dbId,
-//     redirectURL: originalUrl,
-//     visitHistory: [],
-//     createdBy: userId,
-//   });
-
-//   return { ...urlEntry.toObject(), shortId }; // return shortId for API
-// }
-
-export async function createShortUrl(userId, originalUrl, expiresAt) {
-  if (!originalUrl) throw new Error("URL is required");
+export async function createShortUrl(
+  userId,
+  originalUrl,
+  expiresAt,
+  customAlias
+) {
+  if (!originalUrl) {
+    throw new Error("URL is required");
+  }
 
   let expiryDate = null;
 
-  // Validate expiry
+  // Validate expiry date
   if (expiresAt) {
     const date = new Date(expiresAt);
 
@@ -90,7 +29,29 @@ export async function createShortUrl(userId, originalUrl, expiresAt) {
     expiryDate = date;
   }
 
-  // Increment counter
+  // Normalize alias
+  const normalizedAlias = customAlias?.trim().toLowerCase();
+
+  // Validate custom alias
+  if (normalizedAlias) {
+    if (RESERVED_ALIASES.has(normalizedAlias)) {
+      throw new Error(
+        `'${normalizedAlias}' is reserved. Please choose another custom short link.`
+      );
+    }
+
+    const existingAlias = await URL.findOne({
+      customAlias: normalizedAlias,
+    });
+
+    if (existingAlias) {
+      throw new Error(
+        `'${normalizedAlias}' custom short link is already taken. Please choose another.`
+      );
+    }
+  }
+
+  // Generate numeric database id
   const urlCounter = await Counter.findByIdAndUpdate(
     { _id: "url" },
     { $inc: { seq: 1 } },
@@ -99,7 +60,7 @@ export async function createShortUrl(userId, originalUrl, expiresAt) {
 
   const dbId = urlCounter.seq;
 
-  // Generate shortId
+  // Generate encoded short id
   const shortId = encodeShortId(dbId);
 
   // Save URL
@@ -109,82 +70,37 @@ export async function createShortUrl(userId, originalUrl, expiresAt) {
     visitHistory: [],
     createdBy: userId,
     expiresAt: expiryDate,
+    customAlias: normalizedAlias || undefined,
   });
 
-  return { ...urlEntry.toObject(), shortId };
+  return {
+    ...urlEntry.toObject(),
+    shortId: normalizedAlias || shortId,
+  };
 }
 
-// Get URL by shortId and record visit
-// export async function recordVisit(shortId, req) {
-//   const ip =
-//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-//   const geo = geoip.lookup(ip); // returns country, city, region, etc.
-//   const entry = await URL.findOneAndUpdate(
-//     { shortId },
-//     {
-//       $inc: { clicks: 1 },
-//       $push: {
-//         visitHistory: {
-//           timestamp: Date.now(),
-//           ipAddress: req.ip,
-//           userAgent: req.get("User-Agent"),
-//           referrer: req.get("Referrer") || "Direct",
-//           location: geo
-//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
-//             : "Unknown",
-//         },
-//       },
-//     },
-//     { new: true }
-//   );
-
-//   if (!entry) throw new Error("Short URL not found");
-
-//   return entry;
-// }
-
-// Get URL by shortId and record visit
-// export async function recordVisit(shortId, req) {
-//   // Decode shortId → DB id
-//   const dbId = decodeShortId(shortId);
-
-//   // for (let i = 1; i <= 10; i++) {
-//   //   const s = encodeShortId(i);
-//   //   const d = decodeShortId(s);
-//   //   console.log(i, s, d);
-
-//   // Fetch URL entry by _id
-//   const ip =
-//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-//   const geo = geoip.lookup(ip);
-
-//   const entry = await URL.findByIdAndUpdate(
-//     dbId,
-//     {
-//       $inc: { clicks: 1 },
-//       $push: {
-//         visitHistory: {
-//           timestamp: Date.now(),
-//           ipAddress: req.ip,
-//           userAgent: req.get("User-Agent"),
-//           referrer: req.get("Referrer") || "Direct",
-//           location: geo
-//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
-//             : "Unknown",
-//         },
-//       },
-//     },
-//     { new: true }
-//   );
-
-//   if (!entry) throw new Error("Short URL not found");
-
-//   return entry;
-// }
-
 export async function recordVisit(shortId, req) {
-  // Decode shortId → DB id
-  const dbId = decodeShortId(shortId);
+  let entry = null;
+
+  // First try to find by custom alias
+  entry = await URL.findOne({
+    customAlias: shortId.toLowerCase(),
+  });
+
+  // If no custom alias exists, try decoding as Base62
+  if (!entry) {
+    try {
+      const dbId = decodeShortId(shortId);
+      entry = await URL.findById(dbId);
+    } catch {
+      throw new Error("Invalid or Expired Link");
+    }
+  }
+
+  // Validate URL
+  if (!entry || (entry.expiresAt && entry.expiresAt < new Date())) {
+    throw new Error("Invalid or Expired Link");
+  }
 
   // Get client IP
   const ip =
@@ -192,15 +108,7 @@ export async function recordVisit(shortId, req) {
 
   const geo = geoip.lookup(ip);
 
-  // First find the URL
-  const entry = await URL.findById(dbId);
-
-  // single defensive check
-  if (!entry || (entry.expiresAt && entry.expiresAt < new Date())) {
-    throw new Error("Invalid or Expired Link");
-  }
-
-  // Record visit
+  // Record click
   entry.clicks += 1;
 
   entry.visitHistory.push({
@@ -217,52 +125,6 @@ export async function recordVisit(shortId, req) {
 
   return entry;
 }
-
-// Get analytics
-// export async function getAnalytics(shortId) {
-//   const entry = await URL.findOne({ shortId });
-//   if (!entry) throw new Error("Short URL not found");
-
-//   return {
-//     totalClicks: entry.visitHistory.length,
-//     analytics: entry.visitHistory,
-//   };
-// }
-// export async function getAnalytics(shortId, timeRange) {
-
-//   const url = await URL.findOne({ shortId });
-
-//   if (!url) throw new Error("Not found");
-
-//   const now = new Date();
-//   let filteredVisits = url.visitHistory;
-
-//   if (timeRange === "24h") {
-//     const last24h = new Date(now - 24 * 60 * 60 * 1000);
-//     filteredVisits = url.visitHistory.filter(
-//       visit => visit.timestamp >= last24h
-//     );
-//   }
-
-//   if (timeRange === "7d") {
-//     const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
-//     filteredVisits = url.visitHistory.filter(
-//       visit => visit.timestamp >= last7d
-//     );
-//   }
-
-//   if (timeRange === "30d") {
-//     const last30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
-//     filteredVisits = url.visitHistory.filter(
-//       visit => visit.timestamp >= last30d
-//     );
-//   }
-
-//   return {
-//     totalClicks: filteredVisits.length,
-//     analytics: filteredVisits
-//   };
-// }
 
 export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
   const dbId = decodeShortId(shortId);
@@ -374,6 +236,7 @@ export async function getHomePageData(user, query) {
     createdBy: user._id,
     $or: [
       { redirectURL: { $regex: escapedSearch, $options: "i" } },
+      { customAlias: { $regex: escapedSearch, $options: "i" } },
       ...(decodedId ? [{ _id: decodedId }] : []),
     ],
   };
@@ -407,7 +270,7 @@ export async function getHomePageData(user, query) {
   const displayUrls = allUrls.map((url) => ({
     ...url._doc,
     redirectURL: unescapeUrl(url.redirectURL),
-    shortId: encodeShortId(url._id),
+    shortId: url.customAlias || encodeShortId(url._id),
   }));
 
   const totalPages = Math.ceil(totalUrls / limit);
@@ -421,3 +284,186 @@ export async function getHomePageData(user, query) {
     sort,
   };
 }
+
+// Generate a new short URL
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   const shortId = nanoid(8);
+
+//   const urlEntry = await URL.create({
+//     shortId,
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return urlEntry;
+// }
+
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   // 1️⃣ Get next auto-increment ID
+//   const urlCounter = await Counter.findByIdAndUpdate(
+//     { _id: "url" },
+//     { $inc: { seq: 1 } },
+//     { upsert: true, new: true }
+//   );
+
+//   const numericId = urlCounter.seq;
+
+//   // 2️⃣ Encode ID into Base62 shortId
+//   const shortId = encodeShortId(numericId);
+
+//   // 3️⃣ Save to DB
+//   const urlEntry = await URL.create({
+//     shortId,
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return urlEntry;
+// }
+
+// Create a short URL
+// export async function createShortUrl(userId, originalUrl) {
+//   if (!originalUrl) throw new Error("URL is required");
+
+//   // Increment the counter to get a unique sequential DB id
+//   const urlCounter = await Counter.findByIdAndUpdate(
+//     { _id: "url" },
+//     { $inc: { seq: 1 } },
+//     { new: true, upsert: true }
+//   );
+//   const dbId = urlCounter.seq;
+
+//   // Encode DB id → shortId
+//   const shortId = encodeShortId(dbId);
+//   console.log(shortId);
+
+//   // Store only the DB id and original URL
+//   const urlEntry = await URL.create({
+//     _id: dbId,
+//     redirectURL: originalUrl,
+//     visitHistory: [],
+//     createdBy: userId,
+//   });
+
+//   return { ...urlEntry.toObject(), shortId }; // return shortId for API
+// }
+
+// Get URL by shortId and record visit
+// export async function recordVisit(shortId, req) {
+//   const ip =
+//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//   const geo = geoip.lookup(ip); // returns country, city, region, etc.
+//   const entry = await URL.findOneAndUpdate(
+//     { shortId },
+//     {
+//       $inc: { clicks: 1 },
+//       $push: {
+//         visitHistory: {
+//           timestamp: Date.now(),
+//           ipAddress: req.ip,
+//           userAgent: req.get("User-Agent"),
+//           referrer: req.get("Referrer") || "Direct",
+//           location: geo
+//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+//             : "Unknown",
+//         },
+//       },
+//     },
+//     { new: true }
+//   );
+
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return entry;
+// }
+
+// Get URL by shortId and record visit
+// export async function recordVisit(shortId, req) {
+//   // Decode shortId → DB id
+//   const dbId = decodeShortId(shortId);
+
+//   // for (let i = 1; i <= 10; i++) {
+//   //   const s = encodeShortId(i);
+//   //   const d = decodeShortId(s);
+//   //   console.log(i, s, d);
+
+//   // Fetch URL entry by _id
+//   const ip =
+//     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//   const geo = geoip.lookup(ip);
+
+//   const entry = await URL.findByIdAndUpdate(
+//     dbId,
+//     {
+//       $inc: { clicks: 1 },
+//       $push: {
+//         visitHistory: {
+//           timestamp: Date.now(),
+//           ipAddress: req.ip,
+//           userAgent: req.get("User-Agent"),
+//           referrer: req.get("Referrer") || "Direct",
+//           location: geo
+//             ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+//             : "Unknown",
+//         },
+//       },
+//     },
+//     { new: true }
+//   );
+
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return entry;
+// }
+
+// Get analytics
+// export async function getAnalytics(shortId) {
+//   const entry = await URL.findOne({ shortId });
+//   if (!entry) throw new Error("Short URL not found");
+
+//   return {
+//     totalClicks: entry.visitHistory.length,
+//     analytics: entry.visitHistory,
+//   };
+// }
+// export async function getAnalytics(shortId, timeRange) {
+
+//   const url = await URL.findOne({ shortId });
+
+//   if (!url) throw new Error("Not found");
+
+//   const now = new Date();
+//   let filteredVisits = url.visitHistory;
+
+//   if (timeRange === "24h") {
+//     const last24h = new Date(now - 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last24h
+//     );
+//   }
+
+//   if (timeRange === "7d") {
+//     const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last7d
+//     );
+//   }
+
+//   if (timeRange === "30d") {
+//     const last30d = new Date(now - 30 * 24 * 60 * 60 * 1000);
+//     filteredVisits = url.visitHistory.filter(
+//       visit => visit.timestamp >= last30d
+//     );
+//   }
+
+//   return {
+//     totalClicks: filteredVisits.length,
+//     analytics: filteredVisits
+//   };
+// }
