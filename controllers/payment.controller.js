@@ -1,7 +1,11 @@
 import User from "../models/user.model.js";
 import stripe from "../services/stripe.service.js";
 import { appLogger } from "../config/logger.js";
-import { createCheckoutSession, createCustomerPortal } from "../services/payment.service.js";
+import { processWebhookEvent } from "../services/webhook.service.js";
+import {
+  createCheckoutSession,
+  createCustomerPortal,
+} from "../services/payment.service.js";
 
 export async function handleCreateCheckoutSession(req, res, next) {
   try {
@@ -35,12 +39,10 @@ export async function handleStripeWebhook(req, res) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
 
-    // Log successful webhook verification
     appLogger.info("Stripe webhook received", {
       event: event.type,
     });
   } catch (err) {
-    // Log verification failure
     appLogger.error("Stripe webhook verification failed", {
       message: err.message,
       stack: err.stack,
@@ -50,35 +52,12 @@ export async function handleStripeWebhook(req, res) {
   }
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-
-        const userId = session.metadata.userId;
-
-        await User.findByIdAndUpdate(userId, {
-          "subscription.plan": "PRO",
-          "subscription.status": "active",
-          "subscription.stripeSubscriptionId": session.subscription,
-        });
-
-        appLogger.info("User upgraded to PRO", {
-          userId,
-          subscriptionId: session.subscription,
-        });
-
-        break;
-      }
-
-      default:
-        appLogger.info("Unhandled Stripe event", {
-          event: event.type,
-        });
-    }
+    await processWebhookEvent(event);
 
     return res.sendStatus(200);
   } catch (err) {
     appLogger.error("Stripe webhook processing failed", {
+      event: event.type,
       message: err.message,
       stack: err.stack,
     });
@@ -86,8 +65,6 @@ export async function handleStripeWebhook(req, res) {
     return res.sendStatus(500);
   }
 }
-
-
 
 export async function handleCustomerPortal(req, res, next) {
   try {
