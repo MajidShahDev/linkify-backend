@@ -68,6 +68,10 @@ app.use(
 );
 
 // Global Middlewares are attached to every route handlers middleware stack, as first middleware
+app.use(
+  "/payments/webhook",
+  express.raw({ type: "application/json" })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());

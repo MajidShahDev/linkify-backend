@@ -1,4 +1,6 @@
 import User from "../models/user.model.js";
+import stripe from "../services/stripe.service.js";
+import { appLogger } from "../config/logger.js";
 import { createCheckoutSession } from "../services/payment.service.js";
 
 export async function handleCreateCheckoutSession(req, res, next) {
@@ -18,5 +20,69 @@ export async function handleCreateCheckoutSession(req, res, next) {
     });
   } catch (err) {
     next(err);
+  }
+}
+
+export async function handleStripeWebhook(req, res) {
+  const signature = req.headers["stripe-signature"];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+
+    // Log successful webhook verification
+    appLogger.info("Stripe webhook received", {
+      event: event.type,
+    });
+  } catch (err) {
+    // Log verification failure
+    appLogger.error("Stripe webhook verification failed", {
+      message: err.message,
+      stack: err.stack,
+    });
+
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object;
+
+        const userId = session.metadata.userId;
+
+        await User.findByIdAndUpdate(userId, {
+          "subscription.plan": "PRO",
+          "subscription.status": "active",
+          "subscription.stripeSubscriptionId": session.subscription,
+        });
+
+        appLogger.info("User upgraded to PRO", {
+          userId,
+          subscriptionId: session.subscription,
+        });
+
+        break;
+      }
+
+      default:
+        appLogger.info("Unhandled Stripe event", {
+          event: event.type,
+        });
+    }
+
+    return res.sendStatus(200);
+  } catch (err) {
+    appLogger.error("Stripe webhook processing failed", {
+      message: err.message,
+      stack: err.stack,
+    });
+
+    return res.sendStatus(500);
   }
 }
