@@ -22,6 +22,7 @@ import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
 import verifyEmailRouter from "./routes/verifyEmail.routes.js";
 import oauthRoutes from "./routes/oauth.routes.js";
 import twoFARoutes from "./routes/2fa.routes.js"
+import paymentRouter from "./routes/payment.routes.js";
 
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
@@ -90,6 +91,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/payments", paymentRouter);
 app.use("/auth", oauthRoutes);
 app.use("/auth", twoFARoutes);
 app.use("/upload", uploadRouter); // route handle user uploadFile(post)
