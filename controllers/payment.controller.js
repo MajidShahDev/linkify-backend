@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 import stripe from "../services/stripe.service.js";
 import { appLogger } from "../config/logger.js";
-import { createCheckoutSession } from "../services/payment.service.js";
+import { createCheckoutSession, createCustomerPortal } from "../services/payment.service.js";
 
 export async function handleCreateCheckoutSession(req, res, next) {
   try {
@@ -84,5 +84,19 @@ export async function handleStripeWebhook(req, res) {
     });
 
     return res.sendStatus(500);
+  }
+}
+
+
+
+export async function handleCustomerPortal(req, res, next) {
+  try {
+    const user = await User.findById(req.user._id);
+
+    const url = await createCustomerPortal(user);
+
+    return res.redirect(url);
+  } catch (err) {
+    next(err);
   }
 }
