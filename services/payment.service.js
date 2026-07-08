@@ -24,3 +24,31 @@ export async function createOrGetCustomer(userId) {
 
   return customer.id;
 }
+
+export async function createCheckoutSession(user) {
+  const customerId = await createOrGetCustomer(user._id);
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+
+    customer: customerId,
+
+    payment_method_types: ["card"],
+
+    line_items: [
+      {
+        price: process.env.STRIPE_PRICE_ID,
+        quantity: 1,
+      },
+    ],
+
+    success_url: process.env.STRIPE_SUCCESS_URL,
+    cancel_url: process.env.STRIPE_CANCEL_URL,
+
+    metadata: {
+      userId: user._id.toString(),
+    },
+  });
+
+  return session.url;
+}
