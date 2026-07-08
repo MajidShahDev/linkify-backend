@@ -28,6 +28,13 @@ export async function createOrGetCustomer(userId) {
 export async function createCheckoutSession(user) {
   const customerId = await createOrGetCustomer(user._id);
 
+  if (
+    user.subscription.plan === "PRO" &&
+    user.subscription.status === "active"
+  ) {
+    throw new Error("You already have an active Pro subscription.");
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
 
@@ -48,6 +55,17 @@ export async function createCheckoutSession(user) {
     metadata: {
       userId: user._id.toString(),
     },
+  });
+
+  return session.url;
+}
+
+export async function createCustomerPortal(user) {
+  const customerId = await createOrGetCustomer(user._id);
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: process.env.BASE_URL + "/profile",
   });
 
   return session.url;
