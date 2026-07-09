@@ -5,6 +5,7 @@ import geoip from "geoip-lite";
 // import { encodeShortId } from "../utils/base62.js";
 import { encodeShortId, decodeShortId } from "../utils/base62.js";
 import RESERVED_ALIASES from "../utils/reservedAliases.js";
+import { checkCustomAliasQuota } from "./subscription.service.js";
 
 export async function createShortUrl(
   userId,
@@ -39,6 +40,8 @@ export async function createShortUrl(
         `'${normalizedAlias}' is reserved. Please choose another custom short link.`
       );
     }
+
+    await checkCustomAliasQuota(userId);
 
     const existingAlias = await URL.findOne({
       customAlias: normalizedAlias,
