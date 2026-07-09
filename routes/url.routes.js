@@ -12,6 +12,7 @@ import {
 } from "../controllers/url.controller.js";
 import { csrfProtection } from "../middlewares/csrf.middleware.js";
 import RESERVED_ALIASES from "../utils/reservedAliases.js";
+import { requireFeature } from "../middlewares/requirePro.middleware.js";
 
 const router = express.Router();
 
@@ -49,7 +50,7 @@ router.post(
 );
 
 // router.post("/", handleGenerateNewShortUrl);
-router.get("/analytics/:shortId",analyticsLimiter, handleGetAnalytics);
+router.get("/analytics/:shortId",analyticsLimiter, requireFeature("analytics"), handleGetAnalytics);
 router.delete("/:shortId", csrfProtection, handleDeleteShortUrl);
 router.put("/:shortId", csrfProtection, handleEditOriginalUrl);
 

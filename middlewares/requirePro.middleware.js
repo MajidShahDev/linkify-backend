@@ -1,26 +1,19 @@
-import User from "../models/user.model.js";
+import { hasFeature } from "../services/subscription.service.js";
 
-export async function requirePro(req, res, next) {
-  try {
-    const user = await User.findById(req.user._id);
+export function requireFeature(feature) {
+  return async function (req, res, next) {
+    try {
+      const allowed = await hasFeature(req.user._id, feature);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+      if (!allowed) {
+        return res.status(403).render("upgrade", {
+          feature,
+        });
+      }
+
+      next();
+    } catch (err) {
+      next(err);
     }
-
-    if (
-      user.subscription.plan !== "PRO" ||
-      user.subscription.status !== "active"
-    ) {
-      return res.status(403).json({
-        message: "This feature requires a Pro subscription.",
-      });
-    }
-
-    next();
-  } catch (err) {
-    next(err);
-  }
+  };
 }
