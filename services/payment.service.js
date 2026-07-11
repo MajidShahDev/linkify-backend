@@ -25,7 +25,7 @@ export async function createOrGetCustomer(userId) {
   return customer.id;
 }
 
-export async function createCheckoutSession(user) {
+export async function createCheckoutSession(user, cancelToken) {
   const customerId = await createOrGetCustomer(user._id);
 
   if (
@@ -37,11 +37,9 @@ export async function createCheckoutSession(user) {
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-
     customer: customerId,
-
     payment_method_types: ["card"],
-
+    
     line_items: [
       {
         price: process.env.STRIPE_PRICE_ID,
@@ -50,7 +48,7 @@ export async function createCheckoutSession(user) {
     ],
 
     success_url: process.env.STRIPE_SUCCESS_URL,
-    cancel_url: process.env.STRIPE_CANCEL_URL,
+    cancel_url: `${process.env.STRIPE_CANCEL_URL}?token=${cancelToken}`,
 
     metadata: {
       userId: user._id.toString(),

@@ -6,7 +6,7 @@ export function requireFeature(feature) {
       const allowed = await hasFeature(req.user._id, feature);
 
       if (!allowed) {
-        return res.status(403).render("upgrade", {
+        return res.status(403).render("payments/upgrade", {
           feature,
         });
       }
