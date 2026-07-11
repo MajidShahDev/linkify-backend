@@ -1,11 +1,13 @@
 import User from "../models/user.model.js";
 import stripe from "../services/stripe.service.js";
+import crypto from "crypto";
 import { appLogger } from "../config/logger.js";
 import { processWebhookEvent } from "../services/webhook.service.js";
 import {
   createCheckoutSession,
   createCustomerPortal,
 } from "../services/payment.service.js";
+
 
 export async function handleCreateCheckoutSession(req, res, next) {
   try {
@@ -17,11 +19,16 @@ export async function handleCreateCheckoutSession(req, res, next) {
       });
     }
 
-    const checkoutUrl = await createCheckoutSession(user);
+    const cancelToken = crypto.randomBytes(32).toString("hex");
 
-    return res.status(200).json({
-      url: checkoutUrl,
-    });
+    req.session.paymentCancelToken = cancelToken;
+
+    const checkoutUrl = await createCheckoutSession(
+      user,
+      cancelToken
+    );
+
+    return res.redirect(checkoutUrl);
   } catch (err) {
     next(err);
   }
@@ -73,6 +80,50 @@ export async function handleCustomerPortal(req, res, next) {
     const url = await createCustomerPortal(user);
 
     return res.redirect(url);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handlePaymentSuccess(req, res, next) {
+  try {
+    const { session_id: sessionId } = req.query;
+
+    if (!sessionId) {
+      return res.status(400).render("errors/400");
+    }
+
+    const session =
+      await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.metadata.userId !== req.user._id.toString()) {
+      return res.status(403).render("errors/403");
+    }
+
+    if (session.payment_status !== "paid") {
+      return res.status(400).render("errors/400");
+    }
+
+    return res.render("payments/success");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handlePaymentCancel(req, res, next) {
+  try {
+    const { token } = req.query;
+
+    if (
+      !token ||
+      token !== req.session.paymentCancelToken
+    ) {
+      return res.status(403).render("errors/403");
+    }
+
+    delete req.session.paymentCancelToken;
+
+    return res.render("payments/cancel");
   } catch (err) {
     next(err);
   }
