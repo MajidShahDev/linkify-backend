@@ -21,14 +21,17 @@ import uploadRouter from "./routes/upload.routes.js";
 import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
 import verifyEmailRouter from "./routes/verifyEmail.routes.js";
 import oauthRoutes from "./routes/oauth.routes.js";
-import twoFARoutes from "./routes/2fa.routes.js"
+import twoFARoutes from "./routes/2fa.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
 import accessMiddleware from "./middlewares/accessLogger.middleware.js";
 import errorMiddleware from "./middlewares/errorLogger.middleware.js";
-import { attachCsrfToken, csrfProtection } from "./middlewares/csrf.middleware.js";
+import {
+  attachCsrfToken,
+  csrfProtection,
+} from "./middlewares/csrf.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,15 +66,13 @@ app.use(
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
+      formAction: ["'self'", "https://checkout.stripe.com"],
     },
   })
 );
 
 // Global Middlewares are attached to every route handlers middleware stack, as first middleware
-app.use(
-  "/payments/webhook",
-  express.raw({ type: "application/json" })
-);
+app.use("/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
@@ -87,8 +88,8 @@ app.use(
 app.use(passport.initialize());
 app.use(tryAuthenticateUser);
 app.use(accessMiddleware);
-app.use(csrfProtection)
-app.use(attachCsrfToken)
+app.use(csrfProtection);
+app.use(attachCsrfToken);
 
 app.use((req, res, next) => {
   res.locals.user = req.user || null;

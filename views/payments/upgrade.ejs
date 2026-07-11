@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Required</title>
+
+    <link rel="stylesheet" href="/css/output.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8 text-center">
+
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-9 w-9 text-blue-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 8c-1.657 0-3 1.343-3 3v2H8v3h8v-3h-1v-2c0-1.657-1.343-3-3-3zm0-5a5 5 0 00-5 5v2H6a1 1 0 00-1 1v5a2 2 0 002 2h10a2 2 0 002-2v-5a1 1 0 00-1-1h-1V8a5 5 0 00-5-5z" />
+            </svg>
+        </div>
+
+        <h1 class="mt-6 text-3xl font-bold text-gray-800">
+            Upgrade to Linkify Pro
+        </h1>
+
+        <p class="mt-3 text-gray-600">
+            This feature is available exclusively to
+            <span class="font-semibold">Pro</span> subscribers.
+        </p>
+
+        <div class="mt-8 rounded-lg border border-gray-200 p-5 text-left">
+
+            <h2 class="mb-3 text-lg font-semibold">
+                Pro includes:
+            </h2>
+
+            <ul class="space-y-3 text-gray-700">
+
+                <li class="flex items-center gap-3">
+                    <svg class="h-5 w-5 shrink-0 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Unlimited Custom Aliases
+                </li>
+
+                <li class="flex items-center gap-3">
+                    <svg class="h-5 w-5 shrink-0 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Full Analytics Dashboard
+                </li>
+
+                <li class="flex items-center gap-3">
+                    <svg class="h-5 w-5 shrink-0 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Password Protected Links
+                </li>
+
+                <li class="flex items-center gap-3">
+                    <svg class="h-5 w-5 shrink-0 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    QR Codes
+                </li>
+
+                <li class="flex items-center gap-3">
+                    <svg class="h-5 w-5 shrink-0 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Link Expiration
+                </li>
+
+            </ul>
+
+        </div>
+
+        <form action="/payments/create-checkout-session" method="POST" class="mt-8">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <button
+                class="w-full rounded-lg bg-black py-3 font-medium text-white transition hover:bg-gray-800">
+                Upgrade to Pro
+            </button>
+        </form>
+
+        <a href="/"
+            class="mt-4 inline-block text-sm text-gray-500 hover:text-black">
+            Continue with Free Plan
+        </a>
+
+    </div>
+
+</body>
+
+</html>

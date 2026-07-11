@@ -1,14 +1,22 @@
-import { Router } from "express";
-
+import express from "express";
 import { restrictTo } from "../middlewares/auth.middleware.js";
 
 import {
+  handlePaymentSuccess,
+  handlePaymentCancel,
   handleCreateCheckoutSession,
   handleCustomerPortal,
   handleStripeWebhook,
 } from "../controllers/payment.controller.js";
 
-const router = Router();
+const router = express.Router();
+
+router.get("/success", handlePaymentSuccess);
+router.get("/cancel", handlePaymentCancel);
+
+router.get("/upgrade", (req, res) => {
+  return res.render("payments/upgrade", {});
+});
 
 router.post(
   "/create-checkout-session",
