@@ -8,7 +8,6 @@ import {
   createCustomerPortal,
 } from "../services/payment.service.js";
 
-
 export async function handleCreateCheckoutSession(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
@@ -23,10 +22,7 @@ export async function handleCreateCheckoutSession(req, res, next) {
 
     req.session.paymentCancelToken = cancelToken;
 
-    const checkoutUrl = await createCheckoutSession(
-      user,
-      cancelToken
-    );
+    const checkoutUrl = await createCheckoutSession(user, cancelToken);
 
     return res.redirect(checkoutUrl);
   } catch (err) {
@@ -77,6 +73,16 @@ export async function handleCustomerPortal(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
 
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    if (user.subscription.status !== "active") {
+      return res.status(403).render("errors/403");
+    }
+
     const url = await createCustomerPortal(user);
 
     return res.redirect(url);
@@ -93,8 +99,7 @@ export async function handlePaymentSuccess(req, res, next) {
       return res.status(400).render("errors/400");
     }
 
-    const session =
-      await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.metadata.userId !== req.user._id.toString()) {
       return res.status(403).render("errors/403");
@@ -114,10 +119,7 @@ export async function handlePaymentCancel(req, res, next) {
   try {
     const { token } = req.query;
 
-    if (
-      !token ||
-      token !== req.session.paymentCancelToken
-    ) {
+    if (!token || token !== req.session.paymentCancelToken) {
       return res.status(403).render("errors/403");
     }
 
