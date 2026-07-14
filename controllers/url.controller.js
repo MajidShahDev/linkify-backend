@@ -43,7 +43,6 @@ export async function handleCreateNewShortUrl(req, res) {
         customAlias: req.body.customAlias,
       },
       search: (req.query.search || "").trim(),
-      urls: await URL.find({ createdBy: req.user._id }),
     });
   }
 }
