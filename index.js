@@ -68,13 +68,21 @@ app.use(
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
-      formAction: ["'self'", "https://checkout.stripe.com"],
+      formAction: [
+        "'self'",
+        "https://checkout.stripe.com",
+        "https://billing.stripe.com",
+      ],
     },
   })
 );
 
 // Global Middlewares are attached to every route handlers middleware stack, as first middleware
-app.use("/payments/webhook", express.raw({ type: "application/json" }), handleStripeWebhook);
+app.use(
+  "/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());
