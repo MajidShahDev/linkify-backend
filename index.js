@@ -24,6 +24,8 @@ import oauthRoutes from "./routes/oauth.routes.js";
 import twoFARoutes from "./routes/2fa.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 
+import { handleStripeWebhook } from "./controllers/payment.controller.js";
+
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
 import accessMiddleware from "./middlewares/accessLogger.middleware.js";
@@ -72,7 +74,7 @@ app.use(
 );
 
 // Global Middlewares are attached to every route handlers middleware stack, as first middleware
-app.use("/payments/webhook", express.raw({ type: "application/json" }));
+app.use("/payments/webhook", express.raw({ type: "application/json" }), handleStripeWebhook);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // parsing form data
 app.use(cookieParser());

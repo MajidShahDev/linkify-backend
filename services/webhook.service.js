@@ -2,7 +2,11 @@ import User from "../models/user.model.js";
 import { appLogger } from "../config/logger.js";
 
 async function handleCheckoutCompleted(session) {
-  const userId = session.metadata.userId;
+  const userId = session.metadata?.userId;
+
+  if (!userId || !session.subscription) {
+    throw new Error("Checkout session missing userId or subscription ID");
+  }
 
   await User.findByIdAndUpdate(userId, {
     "subscription.plan": "PRO",
