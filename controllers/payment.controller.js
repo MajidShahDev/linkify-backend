@@ -80,7 +80,7 @@ export async function handleCustomerPortal(req, res, next) {
     }
 
     if (user.subscription.status !== "active") {
-      return res.status(403).render("errors/403");
+      return res.status(403).render("payments/upgrade");
     }
 
     const url = await createCustomerPortal(user);

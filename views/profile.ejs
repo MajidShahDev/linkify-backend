@@ -13,84 +13,139 @@
     <div class="container max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg my-10">
 
         <%- include("partials/header", { user }) %>
+
+            <!-- Upload Profile Image -->
             <form action="/user/upload-profile" method="POST" enctype="multipart/form-data"
                 class="max-w-sm mx-auto bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <h2 class="text-lg font-semibold text-gray-800 text-center">
                     Upload Profile Image
                 </h2>
+
                 <label class="flex flex-col gap-2 text-sm text-gray-600">
                     <input type="file" name="profileImage" required
                         class="border border-gray-300 rounded-lg p-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-green-100 file:text-green-800 hover:file:bg-green-200 cursor-pointer" />
                 </label>
-                <!-- <% if (typeof error !=="undefined" && error) { %>
-                    <div class="bg-red-100 text-red-700 p-2 rounded ">
-                        <%= error %>
-                    </div>
-                    <% } %>
 
-                        <% if (typeof success !=="undefined" && success) { %>
-                            <div class="bg-green-100 text-green-700 p-2 rounded">
-                                Upload successful!
-                            </div>
-                            <% } %> -->
                 <% if (typeof error !=="undefined" && error) { %>
-                    <div class="bg-red-100 text-red-700 p-2 rounded mb-3">
-                        <% if (error==="no_file" ) { %>Please upload an image<% } %>
-                                <% if (error==="server_error" ) { %>Something went wrong<% } %>
-                                        <% if (!["no_file", "server_error" ].includes(error)) { %>
-                                            <%= error %>
-                                                <% } %>
+                    <div class="bg-red-100 text-red-700 p-2 rounded">
+                        <% if (error==="no_file" ) { %>
+                            Please upload an image
+                            <% } else if (error==="server_error" ) { %>
+                                Something went wrong
+                                <% } else { %>
+                                    <%= error %>
+                                        <% } %>
                     </div>
                     <% } %>
 
                         <% if (typeof success !=="undefined" && success==="1" ) { %>
-                            <div class="bg-green-100 text-green-700 p-2 rounded mb-3 text-center">
+                            <div class="bg-green-100 text-green-700 p-2 rounded text-center">
                                 Upload successful!
                             </div>
                             <% } %>
+
                                 <button type="submit"
                                     class="bg-green-600 hover:bg-green-700 active:scale-95 transition text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
                                     Upload
                                 </button>
+
             </form>
 
             <!-- Security Settings -->
             <div class="max-w-sm mx-auto mt-8 bg-white border border-gray-200 rounded-xl p-5">
+
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">
                     Security
                 </h2>
 
-                <div>
-                    <h3 class="font-medium text-gray-800">
-                        Two-Factor Authentication
-                    </h3>
+                <h3 class="font-medium text-gray-800">
+                    Two-Factor Authentication
+                </h3>
 
-                    <p class="text-sm text-gray-500 mt-1">
-                        Receive a verification code via email whenever you sign in.
+                <p class="text-sm text-gray-500 mt-1">
+                    Receive a verification code via email whenever you sign in.
+                </p>
+
+                <p class="mt-3 text-sm">
+                    Status:
+                    <% if (user.twoFactorEnabled) { %>
+                        <span class="font-semibold text-green-600">Enabled</span>
+                        <% } else { %>
+                            <span class="font-semibold text-red-600">Disabled</span>
+                            <% } %>
+                </p>
+
+                <form action="/user/toggle-2fa" method="POST" class="mt-5">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="<%= user.twoFactorEnabled
+                        ? 'bg-gray-700 hover:bg-gray-800'
+                        : 'bg-green-600 hover:bg-green-700' %>
+                    w-full text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition active:scale-95">
+                        <%= user.twoFactorEnabled ? "Disable Two-Factor Authentication"
+                            : "Enable Two-Factor Authentication" %>
+                    </button>
+                </form>
+
+            </div>
+
+            <!-- Billing -->
+            <div class="max-w-sm mx-auto mt-8 bg-white border border-gray-200 rounded-xl p-5">
+
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    Billing
+                </h2>
+
+                <p class="text-sm text-gray-500">
+                    Current Plan
+                </p>
+
+                <p class="mt-1 font-semibold <%= user.subscription?.status === 'active'
+                ? 'text-green-600'
+                : 'text-gray-800' %>">
+                    <%= user.subscription?.plan || "FREE" %>
+                </p>
+
+                <% if (user.subscription?.status==="active" ) { %>
+
+                    <p class="text-sm text-gray-500 mt-4">
+                        Status
                     </p>
 
-                    <p class="mt-3 text-sm">
-                        Status:
-                        <% if (user.twoFactorEnabled) { %>
-                            <span class="font-semibold text-green-600">Enabled</span>
-                            <% } else { %>
-                                <span class="font-semibold text-red-600">Disabled</span>
-                                <% } %>
+                    <p class="font-semibold text-green-600">
+                        Active
                     </p>
 
-                    <form action="/user/toggle-2fa" method="POST" class="mt-5">
+                    <p class="text-sm text-gray-500 mt-4">
+                        Manage your subscription, payment method, billing history and invoices through Stripe.
+                    </p>
+
+                    <form action="/payments/customer-portal" method="POST" class="mt-5">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit"
-                            class="<%= user.twoFactorEnabled
-                    ? 'bg-gray-700 hover:bg-gray-800'
-                    : 'bg-green-600 hover:bg-green-700' %> w-full text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition active:scale-95">
-                            <%= user.twoFactorEnabled ? "Disable Two-Factor Authentication"
-                                : "Enable Two-Factor Authentication" %>
+                            class="w-full bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition active:scale-95">
+                            Manage Subscription
                         </button>
                     </form>
-                </div>
+
+                    <% } else { %>
+
+                        <p class="text-sm text-gray-500 mt-4">
+                            Upgrade to Pro to unlock premium features like unlimited custom aliases and future Pro
+                            tools.
+                        </p>
+
+                        <a href="/payments/upgrade"
+                            class="mt-5 block w-full text-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition active:scale-95">
+                            Upgrade to Pro
+                        </a>
+
+                        <% } %>
+
             </div>
 
     </div>
+
 </body>
 
 <script src="/js/dropdown.js"></script>
