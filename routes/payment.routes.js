@@ -30,6 +30,4 @@ router.post(
   handleCustomerPortal
 );
 
-router.post("/webhook", handleStripeWebhook);
-
 export default router;
