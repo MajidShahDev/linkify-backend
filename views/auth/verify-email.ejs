@@ -82,20 +82,22 @@
                         <%= error %>
                     </p>
                     <% } %>
-                <% if (info) { %>
-                    <p>
-                        <%= info %>
-                    </p>
-                    <% } %>
+                        <% if (info) { %>
+                            <p>
+                                <%= info %>
+                            </p>
+                            <% } %>
 
-                        <!-- <p>We’ve sent a verification link to your email. Please check your inbox and click on the link
+                                <!-- <p>We’ve sent a verification link to your email. Please check your inbox and click on the link
                             to verify your account.</p> -->
 
-                        <form action="/resend-verification" method="POST">
-                            <button type="submit">Resend Verification Email</button>
-                        </form>
+                                <form action="/resend-verification" method="POST">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit">Resend Verification Email</button>
 
-                        <!-- <div class="footer">
+                                </form>
+
+                                <!-- <div class="footer">
                             Already verified? <a href="/login">Login</a>
                         </div> -->
     </div>

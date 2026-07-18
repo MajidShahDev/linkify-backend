@@ -85,6 +85,7 @@
 
         <!-- views/signup.ejs -->
         <form action="/user/signup" method="POST" novalidate>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <!-- General error -->
             <% if (errors && errors.general) { %>
                 <p style="color:red">

@@ -84,6 +84,7 @@
         <h1>Login</h1>
 
         <form action="/user/login" method="POST" novalidate>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
             <!-- Email -->
             <label>
