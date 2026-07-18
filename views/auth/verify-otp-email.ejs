@@ -70,31 +70,33 @@
 
     <div class="container">
         <h2>Verify OTP</h2>
-        
+
         <% if (message) { %>
-                    <p style="color: green">
-                        <%= message %>
-                    </p>
-                    <% } %>
-
-        <p>Please enter the OTP sent to your Email</p>
-
-        <% if (errors && errors.general) { %>
-            <p style="color:red">
-                <%= errors.general[0] %>
+            <p style="color: green">
+                <%= message %>
             </p>
             <% } %>
 
-                
+                <p>Please enter the OTP sent to your Email</p>
+
+                <% if (errors && errors.general) { %>
+                    <p style="color:red">
+                        <%= errors.general[0] %>
+                    </p>
+                    <% } %>
+
+
 
 
                         <form method="POST" action="/auth/verify-otp">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <input name="otp" placeholder="Enter OTP" required />
                             <button type="submit">Verify OTP</button>
                         </form>
 
 
                         <form method="POST" action="/auth/resend-email-otp">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button type="submit">Resend OTP</button>
 
                         </form>
