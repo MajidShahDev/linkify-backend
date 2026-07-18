@@ -13,6 +13,7 @@ import {
   requestToggle2FA,
 } from "../controllers/user.controller.js";
 import upload from "../middlewares/upload.middleware.js";
+import { csrfProtection } from "../middlewares/csrf.middleware.js";
 
 const router = express.Router();
 
@@ -58,15 +59,19 @@ router.get("/logout", handleUserLogout);
 // );
 
 router.post(
-  "/upload-profile",
+  "/upload-profile-image",
   (req, res, next) => {
     upload.single("profileImage")(req, res, function (err) {
       if (err) {
-        return res.redirect(`/profile?error=${encodeURIComponent(err.message)}`);
+        return res.redirect(
+          `/profile?error=${encodeURIComponent(err.message)}`
+        );
       }
+
       next();
     });
   },
+  csrfProtection,
   handleUploadProfileImage
 );
 

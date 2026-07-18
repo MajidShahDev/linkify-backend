@@ -15,7 +15,7 @@
         <%- include("partials/header", { user }) %>
 
             <!-- Upload Profile Image -->
-            <form action="/user/upload-profile" method="POST" enctype="multipart/form-data"
+            <form action="/user/upload-profile-image" method="POST" enctype="multipart/form-data" novalidate
                 class="max-w-sm mx-auto bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <h2 class="text-lg font-semibold text-gray-800 text-center">
@@ -23,14 +23,14 @@
                 </h2>
 
                 <label class="flex flex-col gap-2 text-sm text-gray-600">
-                    <input type="file" name="profileImage" required
+                    <input type="file" name="profileImage" required 
                         class="border border-gray-300 rounded-lg p-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-green-100 file:text-green-800 hover:file:bg-green-200 cursor-pointer" />
                 </label>
 
                 <% if (typeof error !=="undefined" && error) { %>
                     <div class="bg-red-100 text-red-700 p-2 rounded">
                         <% if (error==="no_file" ) { %>
-                            Please upload an image
+                            Please choose an image
                             <% } else if (error==="server_error" ) { %>
                                 Something went wrong
                                 <% } else { %>

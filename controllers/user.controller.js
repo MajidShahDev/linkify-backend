@@ -7,6 +7,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { handleSendEmailOTP } from "./2fa.controller.js";
+import { appLogger } from "../config/logger.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -122,7 +123,7 @@ export async function handleUserLogin(req, res) {
       req.session.tempUserId = user._id;
       req.session.otp = {
         type: "email",
-        purpose: "login"
+        purpose: "login",
       };
 
       return res.redirect("/auth/verify-otp-email");
@@ -166,7 +167,7 @@ export async function handleUploadProfileImage(req, res) {
     }
 
     const user = await User.findById(req.user._id);
-    console.log("PROFILE IMAGE:", user.profileImage);
+    // console.log("PROFILE IMAGE:", user.profileImage);
     // 1. Delete old image (if not default)
     if (user.profileImage && user.profileImage !== "/images/default.svg") {
       const oldImagePath = path.join(
@@ -174,12 +175,14 @@ export async function handleUploadProfileImage(req, res) {
         "public",
         user.profileImage
       );
-
+      
       fs.unlink(oldImagePath, (err) => {
         if (err) {
-          console.log("Old image delete error:", err.message);
-        } else {
-          console.log("Old image deleted successfully");
+          appLogger.warn("Failed to delete old profile image", {
+            userId: user._id,
+            path: oldImagePath,
+            message: err.message,
+          });
         }
       });
     }
@@ -201,9 +204,7 @@ export async function requestToggle2FA(req, res) {
 
   req.session.otp = {
     type: "email",
-    purpose: user.twoFactorEnabled
-      ? "disable-2fa"
-      : "enable-2fa",
+    purpose: user.twoFactorEnabled ? "disable-2fa" : "enable-2fa",
   };
 
   return handleSendEmailOTP(req, res);

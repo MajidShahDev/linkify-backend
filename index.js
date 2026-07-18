@@ -98,7 +98,14 @@ app.use(
 app.use(passport.initialize());
 app.use(tryAuthenticateUser);
 app.use(accessMiddleware);
-app.use(csrfProtection);
+
+app.use((req, res, next) => {
+  if (req.path === "/user/upload-profile-image") {
+    return next();
+  }
+  csrfProtection(req, res, next);
+});
+
 app.use(attachCsrfToken);
 
 app.use((req, res, next) => {
