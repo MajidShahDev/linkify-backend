@@ -1,51 +1,30 @@
 // const User = require("../models/user.model");
 import User from "../models/user.model.js";
 
-
-// controllers/verifyEmail.controller.js
 import {
   generateEmailVerificationToken,
   sendVerificationEmail,
   verifyEmail,
 } from "../services/verifyEmail.service.js";
 
-// send verification email
-// async function handleSendVerificationEmail(req, res) {
-//   try {
-//     const user = req.user; // assuming user is authenticated
-//     const token = await generateEmailVerificationToken(user._id);
-//     await sendVerificationEmail(user.email, token);
-
-//     return res.render("verify-email", {
-//       message: "Verification email sent!",
-//       error: null,
-//     });
-//   } catch (err) {
-//     return res.render("verify-email", {
-//       message: null,
-//       error: err.message,
-//     });
-//   }
-// }
 export async function handleSendVerificationEmail(reqOrUser, res = null) {
   try {
-    // Determine if called from signup (user object) or route (req)
+    // Determine if user called from signup (user object) or route (req object)
     let user;
+    // signup (user object)
     if (reqOrUser && reqOrUser._id) {
-      // Called internally with user object
       user = reqOrUser;
+      // route (req object)
     } else if (reqOrUser && reqOrUser.user) {
-      // Called as route handler with req
       user = reqOrUser.user;
     } else {
       throw new Error("User not found");
     }
 
-    // Generate token and send email
     const token = await generateEmailVerificationToken(user._id);
     await sendVerificationEmail(user.email, token);
 
-    // If res exists, render the page (route call)
+    // If res exists for route call
     if (res) {
       return res.render("auth/verify-email", {
         message: "Verification email sent!",
@@ -54,10 +33,9 @@ export async function handleSendVerificationEmail(reqOrUser, res = null) {
       });
     }
 
-    // If called internally, just return success
+    // If called internally for signup
     return { success: true, message: "Verification email sent!" };
   } catch (err) {
-    // If res exists, render page with error
     if (res) {
       return res.render("auth/verify-email", {
         message: null,
@@ -66,42 +44,10 @@ export async function handleSendVerificationEmail(reqOrUser, res = null) {
       });
     }
 
-    // Internal call, throw error to handle it in caller
+    // Internal call,
     throw err;
   }
 }
-
-// async function handleResendVerificationEmail(req, res) {
-//   try {
-//     const userId = req.user._id;
-//     const email = req.user.email;
-
-//     if (req.user.isVerified) {
-//       return res.render("verify-email", {
-//         message: null,
-//         error: null,
-//         info: "Your email is already verified. Login here.",
-//       });
-//     }
-
-//     const token = await generateEmailVerificationToken(userId);
-//     await sendVerificationEmail(email, token);
-
-//     return res.render("verify-email", {
-//       message: "Verification email sent!",
-//       error: null,
-//       info: null,
-//     });
-//   } catch (err) {
-//     return res.render("verify-email", {
-//       message: null,
-//       error: err.message,
-//       info: null,
-//     });
-//   }
-// }
-
-// verify email via link
 
 export async function handleResendVerificationEmail(req, res) {
   try {
@@ -149,5 +95,3 @@ export async function handleVerifyEmail(req, res) {
     });
   }
 }
-
-

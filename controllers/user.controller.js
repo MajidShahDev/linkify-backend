@@ -11,7 +11,6 @@ import { appLogger } from "../config/logger.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
-  // console.log(errors.array());
 
   if (!errors.isEmpty()) {
     const fieldErrors = {};
@@ -61,7 +60,6 @@ export async function handleUserSignup(req, res) {
 export async function handleUserLogin(req, res) {
   const errors = validationResult(req);
 
-  // Validation errors
   if (!errors.isEmpty()) {
     const fieldErrors = {};
 
@@ -103,9 +101,7 @@ export async function handleUserLogin(req, res) {
 
     const result = await login({ email, password });
 
-    // ==========================
     // 2FA REQUIRED
-    // ==========================
     if (result.requires2FA) {
       const otp = crypto.randomInt(100000, 999999).toString();
 
@@ -116,10 +112,8 @@ export async function handleUserLogin(req, res) {
 
       await user.save();
 
-      // Send OTP to email
       await sendEmailOTP(user.email, otp);
 
-      // Save temporary login session
       req.session.tempUserId = user._id;
       req.session.otp = {
         type: "email",
@@ -129,9 +123,7 @@ export async function handleUserLogin(req, res) {
       return res.redirect("/auth/verify-otp-email");
     }
 
-    // ==========================
     // NORMAL LOGIN
-    // ==========================
     res.cookie("token", result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -154,7 +146,7 @@ export function handleUserLogout(req, res) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/", // must match login cookie
+    path: "/", // Match the cookie's original creation path.
   });
   // res.redirect("https://accounts.google.com/logout");
   return res.redirect("/login");
@@ -167,8 +159,6 @@ export async function handleUploadProfileImage(req, res) {
     }
 
     const user = await User.findById(req.user._id);
-    // console.log("PROFILE IMAGE:", user.profileImage);
-    // 1. Delete old image (if not default)
     if (user.profileImage && user.profileImage !== "/images/default.svg") {
       const oldImagePath = path.join(
         process.cwd(),
@@ -176,6 +166,7 @@ export async function handleUploadProfileImage(req, res) {
         user.profileImage
       );
       
+      // Delete old image if not default
       fs.unlink(oldImagePath, (err) => {
         if (err) {
           appLogger.warn("Failed to delete old profile image", {
@@ -187,14 +178,12 @@ export async function handleUploadProfileImage(req, res) {
       });
     }
 
-    //  Save new image path
     const newImagePath = `/uploads/profile/${req.file.filename}`;
     user.profileImage = newImagePath;
     await user.save();
 
     return res.redirect("/profile?success=1");
   } catch (err) {
-    console.log(err);
     return res.redirect("/profile?error=server_error");
   }
 }
@@ -209,136 +198,3 @@ export async function requestToggle2FA(req, res) {
 
   return handleSendEmailOTP(req, res);
 }
-
-// async function handleUserSignup(req, res) {
-//   const errors = validationResult(req);
-//   // console.log(errors.array());
-
-//   if (!errors.isEmpty()) {
-//     const fieldErrors = {};
-
-//     errors.array().forEach((err) => {
-//       if (!fieldErrors[err.path]) {
-//         fieldErrors[err.path] = [];
-//       }
-//       fieldErrors[err.path].push(err.msg);
-//     });
-
-//     return res.status(400).render("signup", {
-//       errors: fieldErrors,
-//       oldInput: {
-//         name: req.body.name || "",
-//         email: req.body.email || "",
-//       },
-//     });
-//   }
-
-//   try {
-//     const { name, email, password } = req.body;
-//     await signup({ name, email, password });
-//     return res.redirect("/login");
-//   } catch (err) {
-//     return res.status(400).render("signup", {
-//       errors: {
-//         email: [err.message], // <-- always an array
-//       },
-//       oldInput: {
-//         name: req.body.name || "",
-//         email: req.body.email || "",
-//       },
-//     });
-//   }
-// }
-
-// async function handleUserSignup(req, res) {
-//   try {
-//     const { name, email, password } = req.body;
-//     await signup({ name, email, password });
-//     return res.redirect("/login");
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(400).render("signup", { error: err.message });
-//   }
-// }
-
-// async function handleUserLogin(req, res) {
-//   try {
-//     const { email, password } = req.body;
-//     const { token } = await login({ email, password });
-
-//     res.cookie("token", token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-//     });
-
-//     return res.redirect("/");
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(400).render("login", { error: err.message });
-//   }
-// }
-
-// const bcrypt = require("bcrypt");
-// const User = require("../models/user.model");
-// const { generateToken } = require("../service/auth.service");
-
-// async function handleUserSignup(req, res) {
-//   try {
-//     const { name, email, password } = req.body;
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).send("User with this email already exists");
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     await User.create({
-//       name,
-//       email,
-//       password: hashedPassword,
-//     });
-//     return res.redirect("/login");
-//   } catch (err) {
-//     return res.status(500).send("Server error");
-//   }
-// }
-
-// async function handleUserLogin(req, res) {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.render("login", { error: "Invalid email or password" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.render("login", { error: "Invalid email or password" });
-//     }
-
-//     const token = generateToken(user);
-//     res.cookie("token", token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-//     });
-
-//     return res.redirect("/");
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).send("Server error");
-//   }
-// }
-
-// async function handleUserLogout(req, res) {
-//   res.clearCookie("token");
-
-//   return res.redirect("/login"); //
-// }
-
-// module.exports = {
-//   handleUserSignup,
-//   handleUserLogin,
-//   handleUserLogout,
-// };

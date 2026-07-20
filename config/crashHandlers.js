@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/node";
 // uncaughtException watches synchronous errors
 // that are NOT caught with try/catch anywhere in the call stack
 process.on("uncaughtException", async (err) => {
+  
   appLogger.error({
     type: "uncaughtException",
     message: err.message,

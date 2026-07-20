@@ -7,7 +7,7 @@ import {
   getAnalytics,
   deleteShortUrl,
   editOriginalUrl,
-} from "../services/url.service.js"; // adjust path
+} from "../services/url.service.js"; 
 
 export async function handleCreateNewShortUrl(req, res) {
   const errors = validationResult(req);
@@ -32,7 +32,6 @@ export async function handleCreateNewShortUrl(req, res) {
 
     // PRG
     return res.redirect("/?created=" + urlEntry.shortId);
-    // ?created=shortid // short id is passed as query parameter
   } catch (err) {
     return res.status(400).render("home", {
       ...data,
@@ -47,7 +46,6 @@ export async function handleCreateNewShortUrl(req, res) {
   }
 }
 
-// Redirect to original URL
 export async function handleRedirectToOrignalURL(req, res) {
   try {
     const entry = await recordVisit(req.params.shortId, req);
@@ -81,7 +79,6 @@ export async function handleGetAnalytics(req, res) {
   }
 }
 
-// Delete URL
 export async function handleDeleteShortUrl(req, res) {
   try {
     const shortId = await deleteShortUrl(req.user._id, req.params.shortId);
@@ -106,44 +103,3 @@ export async function handleEditOriginalUrl(req, res) {
     return res.status(status).json({ error: err.message });
   }
 }
-
-// Get analytics
-
-// export async function handleGetAnalytics(req, res) {
-//   try {
-//     const analyticsData = await getAnalytics(req.params.shortId);
-//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-//     res.render("analytics", {
-//       ...analyticsData,
-//       shortId: req.params.shortId,
-//       baseUrl,
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(404).send("Short URL not found");
-//   }
-// }
-
-// export async function handleGetAnalytics(req, res) {
-//   try {
-//     const { shortId } = req.params;
-
-//     // ✅ Get time range from query string
-//     const timeRange = req.query.time || "all";
-
-//     const analyticsData = await getAnalytics(shortId, timeRange);
-
-//     const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-
-//     res.render("analytics", {
-//       ...analyticsData,
-//       shortId,
-//       baseUrl,
-//       timeRange
-//     });
-
-//   } catch (err) {
-//     console.error(err.message);
-//     return res.status(404).send("Short URL not found");
-//   }
-// }
