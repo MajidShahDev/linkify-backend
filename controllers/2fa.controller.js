@@ -13,8 +13,7 @@ export async function handleVerifyOTP(req, res) {
   const purpose = req.session.otp?.purpose;
 
   // Determine which user to verify
-  const userId =
-    purpose === "login" ? req.session.tempUserId : req.user?._id;
+  const userId = purpose === "login" ? req.session.tempUserId : req.user?._id;
 
   const user = await User.findById(userId);
 
@@ -24,7 +23,6 @@ export async function handleVerifyOTP(req, res) {
 
   const view = "auth/verify-otp-email";
 
-  // Invalid OTP
   if (user.twoFactorCode !== otp) {
     return res.status(400).render(view, {
       errors: { general: ["Invalid OTP"] },
@@ -32,7 +30,6 @@ export async function handleVerifyOTP(req, res) {
     });
   }
 
-  // Expired OTP
   if (!user.twoFactorExpires || user.twoFactorExpires < Date.now()) {
     return res.status(400).render(view, {
       errors: { general: ["OTP expired"] },
@@ -99,10 +96,7 @@ export async function handleSendEmailOTP(req, res) {
     const purpose = req.session.otp?.purpose;
 
     // Determine which user to send OTP to
-    const userId =
-      purpose === "login"
-        ? req.session.tempUserId
-        : req.user?._id;
+    const userId = purpose === "login" ? req.session.tempUserId : req.user?._id;
 
     const user = await User.findById(userId);
 
@@ -110,26 +104,20 @@ export async function handleSendEmailOTP(req, res) {
       return res.redirect("/user/login");
     }
 
-    // Generate OTP
     const otp = crypto.randomInt(100000, 999999).toString();
 
     user.twoFactorCode = otp;
     user.twoFactorExpires = Date.now() + 5 * 60 * 1000; // 5 minutes
 
     await user.save();
-
-    // Send OTP email
     await sendEmailOTP(user.email, otp);
 
     const isResend = req.originalUrl.includes("resend");
 
     return res.render("auth/verify-otp-email", {
       errors: {},
-      message: isResend
-        ? "New OTP sent successfully"
-        : "OTP sent successfully",
+      message: isResend ? "New OTP sent successfully" : "OTP sent successfully",
     });
-
   } catch (err) {
     console.error("Email OTP Error:", err);
 

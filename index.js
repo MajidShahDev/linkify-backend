@@ -1,4 +1,4 @@
-import "dotenv/config"; // automatically loads .env
+import "dotenv/config"; 
 import "./cronJobs/updateClicks.js";
 import "./config/crashHandlers.js";
 import "./config/instrument.js";
@@ -17,7 +17,6 @@ import urlRouter from "./routes/url.routes.js";
 import redirectRouter from "./routes/redirect.routes.js";
 import staticRouter from "./routes/static.routes.js";
 import userRouter from "./routes/user.routes.js";
-import uploadRouter from "./routes/upload.routes.js";
 import forgotPasswordRouter from "./routes/forgotPassword.routes.js";
 import verifyEmailRouter from "./routes/verifyEmail.routes.js";
 import oauthRoutes from "./routes/oauth.routes.js";
@@ -45,19 +44,11 @@ connectMongoDb(process.env.MONGO_URL)
       message: err.message,
       stack: err.stack,
     });
-    process.exit(1); // process.exit(1) stops the server with error if db failed.
-    //               // process.exit(0) immediately stops the server if db failed.
+    process.exit(1); 
   });
 
-app.set("view engine", "ejs"); // setting template engine to ejs to compile ejs files.
-//                               "view engine" is a predefined Express key to set the template engine.
-//                               "ejs" is the template engine name used to compile .ejs files.
-//                                After this, whenever you call res.render('someFile'), Express uses EJS to compile it.
-//                                Express automatically require the EJS library internally; no manual require needed.
-app.set("views", path.resolve("./views")); // setting views are in views directory
-//                               "views" is a predefined Express key to set the directory where template files live.
-//                                This tells Express where to look for files when using res.render().
-//                                // render = template file name // redirect = route/url
+app.set("view engine", "ejs"); 
+app.set("views", path.resolve("./views")); 
 
 app.disable("x-powered-by");
 app.use(
@@ -77,14 +68,14 @@ app.use(
   })
 );
 
-// Global Middlewares are attached to every route handlers middleware stack, as first middleware
+// Global Middlewares 
 app.use(
   "/payments/webhook",
   express.raw({ type: "application/json" }),
   handleStripeWebhook
 );
 app.use(express.json());
-app.use(express.urlencoded({ extended: false })); // parsing form data
+app.use(express.urlencoded({ extended: false })); 
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(express.static("public"));
@@ -116,13 +107,12 @@ app.use((req, res, next) => {
 app.use("/payments", paymentRouter);
 app.use("/auth", oauthRoutes);
 app.use("/auth", twoFARoutes);
-app.use("/upload", uploadRouter); // route handle user uploadFile(post)
-app.use("/user", userRouter); // route handle user login(post) and sign up(post)
-app.use("/url", urlRouter); // route handle generate(post) new shorturl and get analytics of short url
+app.use("/user", userRouter); 
+app.use("/url", urlRouter); 
 app.use("/", verifyEmailRouter);
 app.use("/", forgotPasswordRouter);
-app.use("/", staticRouter); // route handle static home, signIn, signup page
-app.use("/", redirectRouter); // route handle redirect to orignalUrl from shortId.
+app.use("/", staticRouter); 
+app.use("/", redirectRouter); 
 app.use(errorMiddleware);
 
 const options = {
@@ -135,10 +125,3 @@ https.createServer(options, app).listen(PORT, () => {
   appLogger.info(`Server running on port ${PORT}`);
 });
 
-// console.log(`[${new Date().toISOString()}] HTTPS running at https://localhost:3000`);
-// app.listen(PORT, () => {
-// console.log(`[${new Date().toISOString()}] Server running on port: ${PORT}`);
-//   // console.log(`Express app server is started & listening on port: ${PORT}`);
-// });
-
-// app.use("/url",restrictToLoggedInUserOnly ,urlRouter); // run restrictToLoggedInUserOnly for this route only
