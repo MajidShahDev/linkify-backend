@@ -60,8 +60,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    twoFactorCode: String,
-    twoFactorExpires: Date,
     subscription: {
       plan: {
         type: String,

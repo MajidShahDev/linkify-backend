@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 import { handleSendEmailOTP } from "./2fa.controller.js";
 import { appLogger } from "../config/logger.js";
+import { storeOtp, verifyOtp } from "../services/otp.service.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -59,17 +60,12 @@ export async function handleUserSignup(req, res) {
 
 export async function handleUserLogin(req, res) {
   const errors = validationResult(req);
-
   if (!errors.isEmpty()) {
     const fieldErrors = {};
-
     errors.array().forEach((err) => {
-      if (!fieldErrors[err.path]) {
-        fieldErrors[err.path] = [];
-      }
+      if (!fieldErrors[err.path]) fieldErrors[err.path] = [];
       fieldErrors[err.path].push(err.msg);
     });
-
     return res.status(400).render("auth/login", {
       errors: fieldErrors,
       oldInput: { email: req.body.email || "" },
@@ -78,7 +74,6 @@ export async function handleUserLogin(req, res) {
 
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -91,9 +86,7 @@ export async function handleUserLogin(req, res) {
     if (user.provider === "google" || user.password === null) {
       return res.status(400).render("auth/login", {
         errors: {
-          general: [
-            "You signed up using Google. Please login with Google first.",
-          ],
+          general: ["You signed up using Google. Please login with Google first."],
         },
         oldInput: { email },
       });
@@ -101,17 +94,10 @@ export async function handleUserLogin(req, res) {
 
     const result = await login({ email, password });
 
-    // 2FA REQUIRED
+    // 2FA REQUIRED - REDIS VERSION
     if (result.requires2FA) {
-      const otp = crypto.randomInt(100000, 999999).toString();
-
       const user = result.user;
-
-      user.twoFactorCode = otp;
-      user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-      await user.save();
-
+      const otp = await storeOtp(user._id.toString(), 'login', 10 * 60); // 10 min for login
       await sendEmailOTP(user.email, otp);
 
       req.session.tempUserId = user._id;
