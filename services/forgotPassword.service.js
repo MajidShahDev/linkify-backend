@@ -3,18 +3,15 @@ import User from "../models/user.model.js";
 import nodemailer from "nodemailer"; // for sending emails
 
 
-// Generate reset token and save expiry
 export async function generateResetToken(email) {
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error("No user found with this email");
   }
 
-  // Generate token
   const token = crypto.randomBytes(32).toString("hex");
   const expires = Date.now() + 1000 * 60 * 60; // 1 hour
 
-  // Save token and expiry in user record
   user.resetPasswordToken = token;
   user.resetPasswordExpires = expires;
   await user.save();
@@ -22,10 +19,9 @@ export async function generateResetToken(email) {
   return token;
 }
 
-// Send reset email
 export async function sendResetEmail(email, token) {
-  // configure nodemailer (use your SMTP config)
   
+  // configure nodemailer (use your SMTP config)
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -53,7 +49,6 @@ export async function sendResetEmail(email, token) {
   });
 }
 
-// Reset password function
 export async function resetPassword(token, newPassword) {
   const user = await User.findOne({
     resetPasswordToken: token,
@@ -65,7 +60,7 @@ export async function resetPassword(token, newPassword) {
     throw new Error("Invalid or expired token");
   }
 
-  user.password = newPassword; // hash will be handled in pre-save hook or hash manually
+  user.password = newPassword; 
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
 

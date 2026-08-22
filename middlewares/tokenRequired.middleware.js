@@ -10,8 +10,8 @@ export async function resetPasswordTokenRequired(req, res, next) {
 
   // Check if token exists in DB
   const user = await User.findOne({
-    resetPasswordToken: token, // or emailVerificationToken
-    resetPasswordExpires: { $gt: Date.now() }, // optional for expiration
+    resetPasswordToken: token, 
+    resetPasswordExpires: { $gt: Date.now() }, 
   });
 
   if (!user) {

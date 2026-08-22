@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import { generateToken } from "./auth.service.js"; // adjust path
 
-// Signup logic
 export async function signup({ name, email, password }) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -20,7 +19,6 @@ export async function signup({ name, email, password }) {
   return user;
 }
 
-// Login logic
 export async function login({ email, password }) {
   const user = await User.findOne({ email });
   if (!user) {

@@ -3,7 +3,6 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/user.model.js";
 
-// generate token + save
 export async function generateEmailVerificationToken(userId) {
   const token = crypto.randomBytes(32).toString("hex");
 
@@ -17,7 +16,6 @@ export async function generateEmailVerificationToken(userId) {
   return token;
 }
 
-// send email
 export async function sendVerificationEmail(email, token) {
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -43,7 +41,6 @@ export async function sendVerificationEmail(email, token) {
   });
 }
 
-// verify token
 export async function verifyEmail(token) {
   const user = await User.findOne({
     emailVerificationToken: token,
