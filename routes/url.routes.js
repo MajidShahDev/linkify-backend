@@ -49,7 +49,6 @@ router.post(
   handleCreateNewShortUrl
 );
 
-// router.post("/", handleGenerateNewShortUrl);
 router.get("/analytics/:shortId",analyticsLimiter, requireFeature("analytics"), handleGetAnalytics);
 router.delete("/:shortId", csrfProtection, handleDeleteShortUrl);
 router.put("/:shortId", csrfProtection, handleEditOriginalUrl);
@@ -60,45 +59,8 @@ router.get("/qr/:shortId", async (req, res) => {
   const fullUrl = `${process.env.BASE_URL}/${shortId}`;
 
   const qr = await qrService.toDataURL(fullUrl); // Generates base64 image, actual QR code image generation.
-  // const qr = await QRCode.toDataURL(fullUrl);
-
   res.json({ qr });
 });
-
-// router.get('/dashboard', async (req, res) => {
-//   // Fetch all URLs
-//   const urls = await URL.find();
-
-//   // Total URLs and total clicks
-//   const totalUrls = urls.length;
-//   const totalClicks = urls.reduce((sum, url) => sum + url.visitHistory.length, 0);
-
-//   // Collect clicks by day (format: YYYY-MM-DD)
-//   const clicksByDate = {};
-//   urls.forEach(url => {
-//     url.visitHistory.forEach(v => {
-//       const date = new Date(v.timestamp);
-//       const key = date.toISOString().split('T')[0]; // '2026-02-17'
-//       clicksByDate[key] = (clicksByDate[key] || 0) + 1;
-//     });
-//   });
-
-//   // Sort dates for the graph
-//   const sortedDates = Object.keys(clicksByDate).sort((a, b) => new Date(a) - new Date(b));
-//   const labels = sortedDates.map(d => {
-//     const dateObj = new Date(d);
-//     return dateObj.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }); // '17 Feb'
-//   });
-//   const data = sortedDates.map(d => clicksByDate[d]);
-
-//   // Render dashboard
-//   res.render('dashboard', { 
-//     baseUrl: process.env.BASE_URL || 'http://localhost:8081',
-//     totalUrls,
-//     totalClicks,
-//     activity: { labels, data }  // Only send chart data, no recentUrls
-//   });
-// });
 
 router.get('/dashboard', async (req, res) => {
   const urls = await URL.find();
@@ -152,12 +114,8 @@ router.get('/dashboard', async (req, res) => {
     totalUrls,
     totalClicks,
     activity: { labels, data },
-    timeRange // send to EJS to set selected option
+    timeRange 
   });
 });
-
-
-
-
 
 export default router;

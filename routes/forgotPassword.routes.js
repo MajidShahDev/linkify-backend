@@ -5,7 +5,6 @@ import { passwordLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-// Forgot password form submission
 router.post(
   "/forgot-password",
   passwordLimiter,
@@ -15,7 +14,6 @@ router.post(
   handleForgotPassword
 );
 
-// Reset password form submission
 router.post(
   "/reset-password/:token",
   passwordLimiter,
