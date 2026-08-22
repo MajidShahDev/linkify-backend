@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const urlSchema = new mongoose.Schema(
   {
     _id: {
-      type: Number, // IMPORTANT
+      type: Number, 
       required: true,
     },
     redirectURL: {

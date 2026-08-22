@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    // const uniqueName =`${req.user._id}-${Date.now()}-${Math.random().toString(36).substring(2)}${extensionName}`;
     const uniqueName = `${req.user._id}-${randomUUID()}${ext}`;
     cb(null, uniqueName);
   },
