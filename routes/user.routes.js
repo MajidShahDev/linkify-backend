@@ -52,12 +52,6 @@ router.post(
 
 router.get("/logout", handleUserLogout);
 
-// router.post(
-//   "/upload-profile",
-//   upload.single("profileImage"),
-//   handleUploadProfileImage
-// );
-
 router.post(
   "/upload-profile-image",
   (req, res, next) => {

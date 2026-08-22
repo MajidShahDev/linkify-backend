@@ -8,8 +8,6 @@ import { csrfProtection, attachCsrfToken } from "../middlewares/csrf.middleware.
 
 const router = express.Router();
 
-// router.route("/").get(handleRedirectToOrignalURL);
-
 router.get("/signup", async (req, res) => {
   return res.render("auth/signup", {
     errors: {},
@@ -23,24 +21,22 @@ router.get("/login", async (req, res) => {
     oldInput: {},
   });
 });
+
 router.get("/forgot-password", async (req, res) => {
   return res.render("auth/forgot-password", {
     message: null,
     error: null,
-    // errors: { general: [] }, // <--- make sure this exists
-    errors: {}, // <--- make sure this exists
+    errors: {},
     oldInput: {},
   });
 });
 
-// Show reset password form
 router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
   const { token } = req.params;
 
-  // Render your reset-password page with the token
   return res.render("auth/reset-password", {
     token, // needed in form action
-    error: null, // no error initially
+    error: null, 
   });
 });
 
@@ -74,24 +70,6 @@ router.get("/", restrictTo(["USER", "ADMIN"]),  async (req, res) => {
   });
 });
 
-router.get("/create-link", async (req, res) => {
-  return res.render("create-link", {
-    message: null,
-    errors: null,
-    oldInput: {},
-  });
-});
-
-// router.get("/links", restrictTo(["USER", "ADMIN"]), async (req, res) => {
-//   // if(!req.user) return res.redirect('/login');
-//   const allUrls = await URL.find({ createdBy: req.user._id });
-//   return res.render("links", {
-//     urls: allUrls,
-//     errors: {},
-//     oldInput: {},
-//   });
-// });
-
 router.get("/profile", async (req, res) => {
   const freshUser = await User.findById(req.user._id);
 
@@ -103,86 +81,3 @@ router.get("/profile", async (req, res) => {
 });
 
 export default router;
-
-// router.get("/", restrictTo(["USER", "ADMIN"]), async (req, res) => {
-//   const baseUrl = process.env.BASE_URL || "http://localhost:8081";
-
-//   const page = parseInt(req.query.page) || 1;
-//   const limit = 15;
-//   const skip = (page - 1) * limit;
-
-//   const search = (req.query.search || "").trim();
-//   const sort = req.query.sort || "newest";
-
-//   // escape regex
-//   function escapeRegex(string) {
-//     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-//   }
-
-//   function unescapeUrl(escapedUrl) {
-//     return escapedUrl.replace(/\\([.*+?^${}()|[\]\/\\])/g, "$1");
-//   }
-
-//   const escapedSearch = escapeRegex(search);
-
-//   // allow searching by full short URL
-//   const shortIdSearch = escapedSearch.replace(
-//     new RegExp(`^${escapeRegex(baseUrl)}\/?`, "i"),
-//     ""
-//   );
-
-//   const filter = {
-//     createdBy: req.user._id,
-//     $or: [
-//       { redirectURL: { $regex: escapedSearch, $options: "i" } },
-//       { shortId: { $regex: shortIdSearch, $options: "i" } },
-//     ],
-//   };
-
-//   // sorting logic (explicit & safe)
-//   let sortOption;
-
-//   switch (sort) {
-//     case "oldest":
-//       sortOption = { createdAt: 1 };
-//       break;
-
-//     case "mostClicks":
-//       sortOption = { clicks: -1 };
-//       break;
-
-//     case "leastClicks":
-//       sortOption = { clicks: 1 };
-//       break;
-
-//     case "newest":
-//     default:
-//       sortOption = { createdAt: -1 };
-//   }
-
-//   const totalUrls = await URL.countDocuments(filter);
-
-//   const urls = await URL.find(filter)
-//     .sort(sortOption)
-//     .skip(skip)
-//     .limit(limit);
-
-//   const displayUrls = urls.map(url => ({
-//     ...url._doc,
-//     redirectURL: unescapeUrl(url.redirectURL),
-//   }));
-
-//   const totalPages = Math.ceil(totalUrls / limit);
-
-//   res.render("home", {
-//     urls: displayUrls,
-//     baseUrl,
-//     currentPage: page,
-//     totalPages,
-//     search,
-//     sort,
-//     id: req.query.created || null,
-//     errors: {},
-//     oldInput: {},
-//   });
-// });
