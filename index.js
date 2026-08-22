@@ -1,5 +1,6 @@
 import "dotenv/config"; 
 import "./cronJobs/updateClicks.js";
+import "./cronJobs/flushClicks.js";
 import "./config/crashHandlers.js";
 import "./config/instrument.js";
 import "./config/redis.js"

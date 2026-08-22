@@ -49,7 +49,7 @@ export async function handleCreateNewShortUrl(req, res) {
 export async function handleRedirectToOrignalURL(req, res) {
   try {
     const entry = await recordVisit(req.params.shortId, req);
-    return res.redirect(entry.redirectURL);
+    return res.redirect(302, entry.redirectURL);
   } catch (err) {
     console.error(err.message);
     return res.status(404).send(err.message);
