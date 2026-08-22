@@ -3,7 +3,6 @@ import "./cronJobs/updateClicks.js";
 import "./config/crashHandlers.js";
 import "./config/instrument.js";
 import "./config/redis.js"
-// import redis from "./config/redis.js"
 import express from "express";
 import connectMongoDb from "./config/db.js";
 import cookieParser from "cookie-parser";

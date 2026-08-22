@@ -1,6 +1,43 @@
 import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import redis from "../config/redis.js";
+
+// Per-User OTP limit (3 per minute per user)
+export const otpUserLimiter = async (req, res, next) => {
+  try {
+    const purpose = req.session.otp?.purpose;
+    const userId = purpose === "login" ? req.session.tempUserId : req.user?._id;
+
+    if (!userId) return next(); // let IP limiter handle it
+
+    const key = `rate:otp:${userId}`;
+    const count = await redis.incr(key);
+    if (count === 1) {
+      await redis.expire(key, 60); // 1 minute window
+    }
+
+    if (count > 3) {
+      const ttl = await redis.ttl(key);
+      return res.status(429).render("auth/verify-otp-email", {
+        message: null,
+        error: null,
+        errors: {
+          general: [
+            `Too many OTPs for this account. Wait ${ttl}s and try again.`,
+          ],
+        },
+        info: null,
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("Redis rate limit error:", err);
+    next(); // don't block if redis fails
+  }
+};
 
 export const generalAuthLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // max 5 requests per window per IP
   message: {
@@ -11,12 +48,12 @@ export const generalAuthLimiter = rateLimit({
 });
 
 export const loginLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // max 5 login attempts per IP
   standardHeaders: true,
   legacyHeaders: false,
   handler: async (req, res) => {
-
     return res.status(429).render("auth/login", {
       // ...data,
       errors: {
@@ -30,6 +67,7 @@ export const loginLimiter = rateLimit({
 });
 
 export const passwordLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,
   standardHeaders: true,
@@ -47,8 +85,9 @@ export const passwordLimiter = rateLimit({
 });
 
 export const emailOtpSendLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 3, // max 2 OTP requests per IP
+  max: 5, // max 5 OTP requests per IP
   standardHeaders: true,
   legacyHeaders: false,
 
@@ -66,6 +105,7 @@ export const emailOtpSendLimiter = rateLimit({
 
 // Redirect limiter: 100–500 requests per minute
 export const redirectLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 60 * 1000, // 1 minute
   max: 500,
   message: {
@@ -77,6 +117,7 @@ export const redirectLimiter = rateLimit({
 
 // Analytics limiter: 30–60 requests per minute
 export const analyticsLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 60 * 1000, // 1 minute
   max: 60,
   message: {
@@ -87,6 +128,7 @@ export const analyticsLimiter = rateLimit({
 });
 
 export const createShortUrlLimiter = rateLimit({
+  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
   windowMs: 60 * 1000, // 1 minute
   max: 25,
   standardHeaders: true,

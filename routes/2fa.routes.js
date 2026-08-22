@@ -8,6 +8,7 @@ import { body } from "express-validator";
 import {
   emailOtpSendLimiter,
   generalAuthLimiter,
+  otpUserLimiter,
 } from "../middlewares/rateLimiter.js";
 import { requireTempUser } from "../middlewares/tempUser.middleware.js";
 
@@ -37,8 +38,8 @@ router.post(
 );
 
 
-router.post("/send-email-otp", emailOtpSendLimiter, handleSendEmailOTP);
+router.post("/send-email-otp", emailOtpSendLimiter, otpUserLimiter, handleSendEmailOTP);
 
-router.post("/resend-email-otp", emailOtpSendLimiter, handleSendEmailOTP);
+router.post("/resend-email-otp", emailOtpSendLimiter, otpUserLimiter, handleSendEmailOTP);
 
 export default router;
