@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redis from "../config/redis.js";
 
-// Per-User OTP limit (3 per minute per user)
+// Per-User OTP limit (5 otp per 15 minute per user)
 export const otpUserLimiter = async (req, res, next) => {
   try {
     const purpose = req.session.otp?.purpose;
@@ -10,13 +10,13 @@ export const otpUserLimiter = async (req, res, next) => {
 
     if (!userId) return next(); // let IP limiter handle it
 
-    const key = `rate:otp:${userId}`;
+    const key = `otp:ratelimit:user:${userId}`;
     const count = await redis.incr(key);
     if (count === 1) {
-      await redis.expire(key, 60); // 1 minute window
+      await redis.expire(key, 15 * 60); // 15 minute window
     }
 
-    if (count > 3) {
+    if (count > 5) {
       const ttl = await redis.ttl(key);
       return res.status(429).render("auth/verify-otp-email", {
         message: null,
@@ -85,9 +85,13 @@ export const passwordLimiter = rateLimit({
 });
 
 export const emailOtpSendLimiter = rateLimit({
-  store: new RedisStore({ sendCommand: (...args) => redis.call(...args) }),
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 5, // max 5 OTP requests per IP
+  store: new RedisStore({
+    sendCommand: (...args) => redis.call(...args),
+    prefix: "otp:ratelimit:ip:",
+  }),
+  keyGenerator: (req) => req.ip,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // max 15 OTP requests per IP
   standardHeaders: true,
   legacyHeaders: false,
 
@@ -96,7 +100,7 @@ export const emailOtpSendLimiter = rateLimit({
       message: null,
       error: null,
       errors: {
-        general: ["Too many OTP requests. Please try again after 10 minutes."],
+        general: ["Too many OTP requests. Please try again after 15 minutes."],
       },
       info: null,
     });
