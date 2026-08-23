@@ -5,7 +5,8 @@ import geoip from "geoip-lite";
 import { encodeShortId, decodeShortId } from "../utils/base62.js";
 import RESERVED_ALIASES from "../utils/reservedAliases.js";
 import { checkCustomAliasQuota } from "./subscription.service.js";
-import redis from "../config/redis.js"; // <--- ADD
+import redis from "../config/redis.js";
+import AppError from "../utils/AppError.js";
 
 const CACHE_TTL = 60 * 60; // 1 hour
 const CACHE_PREFIX = "cache:url:";
@@ -100,7 +101,7 @@ export async function recordVisit(shortId, req) {
       const parsed = JSON.parse(cached);
       if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
         await redis.del(cacheKey);
-        throw new Error("Invalid or Expired Link");
+        throw new AppError("Invalid or expired link", 404);
       }
 
       redis.incr(`clicks:${parsed.dbId}`).catch(() => {});
@@ -110,9 +111,11 @@ export async function recordVisit(shortId, req) {
     } else {
       console.log(`[CACHE MISS] ${shortId}`);
     }
-  } catch (e) {
-    if (e.message === "Invalid or Expired Link") throw e;
-    console.error("Redis error:", e.message);
+  } catch (err) {
+    if (err instanceof AppError) {
+      throw err;
+    }
+    console.error("Redis error:", err.message);
   }
 
   // 2. Cache MISS - Original DB logic
@@ -124,12 +127,12 @@ export async function recordVisit(shortId, req) {
       const dbId = decodeShortId(shortId);
       entry = await URL.findById(dbId);
     } catch {
-      throw new Error("Invalid or Expired Link");
+      throw new AppError("Invalid or expired link", 404);
     }
   }
 
   if (!entry || (entry.expiresAt && entry.expiresAt < new Date())) {
-    throw new Error("Invalid or Expired Link");
+    throw new AppError("Invalid or expired link", 404);
   }
 
   // 3. Save to Redis for next time
@@ -188,10 +191,19 @@ export async function recordVisit(shortId, req) {
 }
 
 export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
-  const dbId = decodeShortId(shortId);
+  let dbId;
+
+  try {
+    dbId = decodeShortId(shortId);
+  } catch {
+    throw new AppError("Short URL not found", 404);
+  }
+
   const url = await URL.findById(dbId, "visitHistory"); // only need visitHistory
 
-  if (!url) throw new Error("Not found");
+  if (!url) {
+    throw new AppError("Short URL not found", 404);
+  }
 
   const now = new Date();
   let filteredVisits = url.visitHistory;
@@ -236,11 +248,11 @@ export async function deleteShortUrl(userId, shortId) {
       entry = await URL.findById(dbId);
     } catch {}
   }
-  
-  if (!entry) throw new Error("Invalid or Expired Link");
+
+  if (!entry) throw new AppError("Invalid or Expired Link", 404);
 
   if (entry.createdBy.toString() !== userId.toString()) {
-    throw new Error("You are not allowed to delete this URL");
+    throw new AppError("You are not allowed to delete this URL", 403);
   }
 
   await URL.deleteOne({ _id: entry._id }); // <-- use entry._id
@@ -255,14 +267,23 @@ export async function deleteShortUrl(userId, shortId) {
 
 // Edit original URL
 export async function editOriginalUrl(userId, shortId, newUrl) {
-  if (!newUrl) throw new Error("New URL is required");
-  const dbId = decodeShortId(shortId);
+  if (!newUrl) throw new AppError("New URL is required", 400);
+
+  let dbId;
+
+  try {
+    dbId = decodeShortId(shortId);
+  } catch {
+    throw new AppError("Invalid or expired link", 404);
+  }
+
   const entry = await URL.findById(dbId);
-  if (!entry) throw new Error("Invalid or Expired Link");
+
+  if (!entry) throw new AppError("Invalid or Expired Link", 404);
 
   // Only creator can edit
   if (entry.createdBy.toString() !== userId.toString()) {
-    throw new Error("You are not allowed to edit this URL");
+    throw new AppError("You are not allowed to edit this URL", 403);
   }
 
   entry.redirectURL = newUrl;
