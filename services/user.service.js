@@ -19,12 +19,7 @@ export async function signup({ name, email, password }) {
   return user;
 }
 
-export async function login({ email, password }) {
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new Error("Invalid email or password");
-  }
-
+export async function login({ user, password }) {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error("Invalid email or password");

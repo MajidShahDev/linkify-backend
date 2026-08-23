@@ -92,15 +92,15 @@ export async function handleUserLogin(req, res) {
       });
     }
 
-    const result = await login({ email, password });
+    const result = await login({ user, password });
 
     // 2FA REQUIRED - REDIS VERSION
     if (result.requires2FA) {
-      const user = result.user;
-      const otp = await storeOtp(user._id.toString(), 'login', 10 * 60); // 10 min for login
-      await sendEmailOTP(user.email, otp);
+      const loggedInUser = result.user;
+      const otp = await storeOtp(loggedInUser._id.toString(), 'login', 10 * 60); // 10 min valid
+      await sendEmailOTP(loggedInUser.email, otp);
 
-      req.session.tempUserId = user._id;
+      req.session.tempUserId = loggedInUser._id;
       req.session.otp = {
         type: "email",
         purpose: "login",
