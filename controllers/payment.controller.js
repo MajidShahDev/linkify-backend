@@ -7,27 +7,22 @@ import {
   createCheckoutSession,
   createCustomerPortal,
 } from "../services/payment.service.js";
+import AppError from "../utils/AppError.js";
 
-export async function handleCreateCheckoutSession(req, res, next) {
-  try {
-    const user = await User.findById(req.user._id);
+export async function handleCreateCheckoutSession(req, res) {
+  const user = await User.findById(req.user._id);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    const cancelToken = crypto.randomBytes(32).toString("hex");
-
-    req.session.paymentCancelToken = cancelToken;
-
-    const checkoutUrl = await createCheckoutSession(user, cancelToken);
-
-    return res.redirect(checkoutUrl);
-  } catch (err) {
-    next(err);
+  if (!user) {
+    throw new AppError("User not found", 404);
   }
+
+  const cancelToken = crypto.randomBytes(32).toString("hex");
+
+  req.session.paymentCancelToken = cancelToken;
+
+  const checkoutUrl = await createCheckoutSession(user, cancelToken);
+
+  return res.redirect(checkoutUrl);
 }
 
 export async function handleStripeWebhook(req, res) {
@@ -69,26 +64,20 @@ export async function handleStripeWebhook(req, res) {
   }
 }
 
-export async function handleCustomerPortal(req, res, next) {
-  try {
-    const user = await User.findById(req.user._id);
+export async function handleCustomerPortal(req, res) {
+  const user = await User.findById(req.user._id);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    if (user.subscription.status !== "active") {
-      return res.status(403).render("payments/upgrade");
-    }
-
-    const url = await createCustomerPortal(user);
-
-    return res.redirect(url);
-  } catch (err) {
-    next(err);
+  if (!user) {
+    throw new AppError("User not found", 404);
   }
+
+  if (user.subscription.status !== "active") {
+    return res.status(403).render("payments/upgrade");
+  }
+
+  const url = await createCustomerPortal(user);
+
+  return res.redirect(url);
 }
 
 export async function handlePaymentSuccess(req, res, next) {
@@ -115,18 +104,14 @@ export async function handlePaymentSuccess(req, res, next) {
   }
 }
 
-export async function handlePaymentCancel(req, res, next) {
-  try {
-    const { token } = req.query;
+export async function handlePaymentCancel(req, res) {
+  const { token } = req.query;
 
-    if (!token || token !== req.session.paymentCancelToken) {
-      return res.status(403).render("errors/403");
-    }
-
-    delete req.session.paymentCancelToken;
-
-    return res.render("payments/cancel");
-  } catch (err) {
-    next(err);
+  if (!token || token !== req.session.paymentCancelToken) {
+    return res.status(403).render("errors/403");
   }
+
+  delete req.session.paymentCancelToken;
+
+  return res.render("payments/cancel");
 }
