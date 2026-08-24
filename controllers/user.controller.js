@@ -9,6 +9,7 @@ import path from "path";
 import { handleSendEmailOTP } from "./2fa.controller.js";
 import { appLogger } from "../config/logger.js";
 import { storeOtp, verifyOtp } from "../services/otp.service.js";
+import AppError from "../utils/AppError.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -46,15 +47,18 @@ export async function handleUserSignup(req, res) {
       },
     });
   } catch (err) {
-    return res.status(400).render("auth/signup", {
-      errors: {
-        email: [err.message], // always an array
-      },
-      oldInput: {
-        name: req.body.name || "",
-        email: req.body.email || "",
-      },
-    });
+    if (err instanceof AppError && err.statusCode === 400) {
+      return res.status(400).render("auth/signup", {
+        errors: {
+          email: [err.message], // always an array
+        },
+        oldInput: {
+          name: req.body.name || "",
+          email: req.body.email || "",
+        },
+      });
+    }
+    throw err; // express 5 -> centralized error handler
   }
 }
 
@@ -86,7 +90,9 @@ export async function handleUserLogin(req, res) {
     if (user.provider === "google" || user.password === null) {
       return res.status(400).render("auth/login", {
         errors: {
-          general: ["You signed up using Google. Please login with Google first."],
+          general: [
+            "You signed up using Google. Please login with Google first.",
+          ],
         },
         oldInput: { email },
       });
@@ -97,7 +103,7 @@ export async function handleUserLogin(req, res) {
     // 2FA REQUIRED - REDIS VERSION
     if (result.requires2FA) {
       const loggedInUser = result.user;
-      const otp = await storeOtp(loggedInUser._id.toString(), 'login', 10 * 60); // 10 min valid
+      const otp = await storeOtp(loggedInUser._id.toString(), "login", 10 * 60); // 10 min valid
       await sendEmailOTP(loggedInUser.email, otp);
 
       req.session.tempUserId = loggedInUser._id;
@@ -120,10 +126,13 @@ export async function handleUserLogin(req, res) {
 
     return res.redirect("/");
   } catch (err) {
-    return res.status(400).render("auth/login", {
-      errors: { general: [err.message] },
-      oldInput: { email: req.body.email || "" },
-    });
+    if (err instanceof AppError && err.statusCode === 400) {
+      return res.status(400).render("auth/login", {
+        errors: { general: [err.message] },
+        oldInput: { email: req.body.email || "" },
+      });
+    }
+    throw err; // express 5 -> centralized error handler
   }
 }
 
@@ -139,7 +148,6 @@ export function handleUserLogout(req, res) {
 }
 
 export async function handleUploadProfileImage(req, res) {
-  try {
     if (!req.file) {
       return res.redirect("/profile?error=no_file");
     }
@@ -151,7 +159,7 @@ export async function handleUploadProfileImage(req, res) {
         "public",
         user.profileImage
       );
-      
+
       // Delete old image if not default
       fs.unlink(oldImagePath, (err) => {
         if (err) {
@@ -169,9 +177,6 @@ export async function handleUploadProfileImage(req, res) {
     await user.save();
 
     return res.redirect("/profile?success=1");
-  } catch (err) {
-    return res.redirect("/profile?error=server_error");
-  }
 }
 
 export async function requestToggle2FA(req, res) {
