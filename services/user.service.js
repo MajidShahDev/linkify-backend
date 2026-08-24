@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
-import { generateToken } from "./auth.service.js"; // adjust path
+import { generateToken } from "./auth.service.js";
+import AppError from "../utils/AppError.js";
 
 export async function signup({ name, email, password }) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error("User with this email already exists");
+    throw new AppError("User with this email already exists", 400);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,7 +23,7 @@ export async function signup({ name, email, password }) {
 export async function login({ user, password }) {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password", 400);
   }
 // if 2fa enabled then stop here
     if (user.twoFactorEnabled) {
