@@ -9,6 +9,7 @@ process.on("uncaughtException", async (err) => {
   appLogger.error({
     type: "uncaughtException",
     message: err.message,
+    stack: err.stack,
   });
 
   console.error("Uncaught Exception! Shutting down...");
@@ -26,6 +27,7 @@ process.on("unhandledRejection", async (reason, promise) => {
   appLogger.error({
     type: "unhandledRejection",
     message: reason?.message || reason,
+    stack: reason?.stack || "No stack trace available",
   });
 
   console.error("Unhandled Rejection! Shutting down...");
