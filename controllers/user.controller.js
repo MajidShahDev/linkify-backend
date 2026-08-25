@@ -47,8 +47,8 @@ export async function handleUserSignup(req, res) {
       },
     });
   } catch (err) {
-    if (err instanceof AppError && err.statusCode === 400) {
-      return res.status(400).render("auth/signup", {
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/signup", {
         errors: {
           email: [err.message], // always an array
         },
@@ -58,7 +58,7 @@ export async function handleUserSignup(req, res) {
         },
       });
     }
-    throw err; // express 5 -> centralized error handler
+    throw err; // centralized error handler
   }
 }
 
@@ -126,13 +126,13 @@ export async function handleUserLogin(req, res) {
 
     return res.redirect("/");
   } catch (err) {
-    if (err instanceof AppError && err.statusCode === 400) {
-      return res.status(400).render("auth/login", {
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/login", {
         errors: { general: [err.message] },
         oldInput: { email: req.body.email || "" },
       });
     }
-    throw err; // express 5 -> centralized error handler
+    throw err; // centralized error handler
   }
 }
 
