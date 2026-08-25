@@ -1,12 +1,12 @@
 import crypto from "crypto";
 import User from "../models/user.model.js";
 import nodemailer from "nodemailer"; // for sending emails
-
+import AppError from "../utils/AppError.js";
 
 export async function generateResetToken(email) {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error("No user found with this email");
+    throw new AppError("No user found with this email", 404);
   }
 
   const token = crypto.randomBytes(32).toString("hex");
@@ -57,7 +57,7 @@ export async function resetPassword(token, newPassword) {
   });
 
   if (!user) {
-    throw new Error("Invalid or expired token");
+    throw new AppError("Invalid or expired token", 400);
   }
 
   user.password = newPassword; 
