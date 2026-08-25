@@ -1,6 +1,7 @@
 import Url from "../models/url.model.js";
 import User from "../models/user.model.js";
 import { SUBSCRIPTION_PLANS } from "../config/subscriptionPlans.js";
+import AppError from "../utils/AppError.js";
 
 export async function getUserPlan(userId) {
   const user = await User.findById(userId);
@@ -31,8 +32,9 @@ export async function checkCustomAliasQuota(userId) {
   });
 
   if (totalCustomAliases >= plan.limits.customAliases) {
-    throw new Error(
-      `Your ${plan.name} plan allows only ${plan.limits.customAliases} custom aliases. Upgrade to Pro for unlimited custom aliases.`
+    throw new AppError(
+      `Your ${plan.name} plan allows only ${plan.limits.customAliases} custom aliases. Upgrade to Pro for unlimited custom aliases.`,
+      400
     );
   }
 }

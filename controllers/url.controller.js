@@ -33,16 +33,19 @@ export async function handleCreateNewShortUrl(req, res) {
     // PRG
     return res.redirect("/?created=" + urlEntry.shortId);
   } catch (err) {
-    return res.status(400).render("home", {
-      ...data,
-      errors: [err.message],
-      oldInput: {
-        url: req.body.url,
-        expiresAt: req.body.expiresAt,
-        customAlias: req.body.customAlias,
-      },
-      search: (req.query.search || "").trim(),
-    });
+    if(err instanceof AppError){
+      return res.status(err.statusCode).render("home", {
+        ...data,
+        errors: [err.message],
+        oldInput: {
+          url: req.body.url,
+          expiresAt: req.body.expiresAt,
+          customAlias: req.body.customAlias,
+        },
+        search: (req.query.search || "").trim(),
+      });
+    }
+    throw err; // centralized error handler
   }
 }
 
