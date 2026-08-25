@@ -22,7 +22,7 @@ export async function createShortUrl(
   customAlias
 ) {
   if (!originalUrl) {
-    throw new Error("URL is required");
+    throw new AppError("URL is required", 400);
   }
 
   let expiryDate = null;
@@ -32,7 +32,7 @@ export async function createShortUrl(
     const date = new Date(expiresAt);
 
     if (date <= new Date()) {
-      throw new Error("Expiry date must be in the future");
+      throw new AppError("Expiry date must be in the future", 400);
     }
 
     expiryDate = date;
@@ -43,8 +43,9 @@ export async function createShortUrl(
   // Validate custom alias
   if (normalizedAlias) {
     if (RESERVED_ALIASES.has(normalizedAlias)) {
-      throw new Error(
-        `'${normalizedAlias}' is reserved. Please choose another custom short link.`
+      throw new AppError(
+        `'${normalizedAlias}' is reserved. Please choose another custom short link.`,
+        400
       );
     }
 
@@ -55,8 +56,9 @@ export async function createShortUrl(
     });
 
     if (existingAlias) {
-      throw new Error(
-        `'${normalizedAlias}' custom short link is already taken. Please choose another.`
+      throw new AppError(
+        `'${normalizedAlias}' custom short link is already taken. Please choose another.`,
+        400
       );
     }
   }
