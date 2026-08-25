@@ -2,12 +2,13 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/user.model.js";
+import AppError from "../utils/AppError.js";
 
 export async function generateEmailVerificationToken(userId) {
   const token = crypto.randomBytes(32).toString("hex");
 
   const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found", 404);
 
   user.emailVerificationToken = token;
   user.emailVerificationExpires = Date.now() + 1000 * 60 * 60; // 1 hour
@@ -47,7 +48,7 @@ export async function verifyEmail(token) {
     emailVerificationExpires: { $gt: Date.now() },
   });
 
-  if (!user) throw new Error("Invalid or expired verification link");
+  if (!user) throw new AppError("Invalid or expired verification link", 400);
 
   user.isEmailVerified = true;
   user.emailVerificationToken = undefined;

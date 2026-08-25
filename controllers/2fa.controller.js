@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import { generateToken } from "../services/auth.service.js";
 import { sendEmailOTP } from "../services/otpEmail.service.js";
 import { storeOtp, verifyOtp } from "../services/otp.service.js";
+import AppError from "../utils/AppError.js";
 
 export function verifyEmailOTPPage(req, res) {
   res.render("auth/verify-otp-email", { errors: {}, message: null });
@@ -10,7 +11,7 @@ export function verifyEmailOTPPage(req, res) {
 export async function handleVerifyOTP(req, res) {
   const { otp } = req.body;
   const purpose = req.session.otp?.purpose;
-  const userId = purpose === "login"? req.session.tempUserId : req.user?._id;
+  const userId = purpose === "login" ? req.session.tempUserId : req.user?._id;
   const view = "auth/verify-otp-email";
 
   if (!userId) return res.redirect("/user/login");
@@ -23,8 +24,9 @@ export async function handleVerifyOTP(req, res) {
 
   if (!result.valid) {
     let msg = "Invalid OTP";
-    if (result.reason === 'expired') msg = "OTP expired";
-    if (result.reason === 'max_attempts') msg = "Too many attempts, resend new code";
+    if (result.reason === "expired") msg = "OTP expired";
+    if (result.reason === "max_attempts")
+      msg = "Too many attempts, resend new code";
 
     return res.status(400).render(view, {
       errors: { general: [msg] },
@@ -70,7 +72,7 @@ export async function handleVerifyOTP(req, res) {
 export async function handleSendEmailOTP(req, res) {
   try {
     const purpose = req.session.otp?.purpose;
-    const userId = purpose === "login"? req.session.tempUserId : req.user?._id;
+    const userId = purpose === "login" ? req.session.tempUserId : req.user?._id;
 
     const user = await User.findById(userId);
     if (!user) return res.redirect("/user/login");
@@ -83,13 +85,15 @@ export async function handleSendEmailOTP(req, res) {
 
     return res.render("auth/verify-otp-email", {
       errors: {},
-      message: isResend? "New OTP sent successfully" : "OTP sent successfully",
+      message: isResend ? "New OTP sent successfully" : "OTP sent successfully",
     });
   } catch (err) {
-    console.error("Email OTP Error:", err);
-    return res.status(500).render("auth/verify-otp-email", {
-      errors: { general: ["Failed to send OTP"] },
-      message: null,
-    });
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/verify-otp-email", {
+        errors: { general: ["Failed to send OTP"] },
+        message: null,
+      });
+    }
+    throw err; // → centralized error handler
   }
 }

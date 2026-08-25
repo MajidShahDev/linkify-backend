@@ -6,6 +6,7 @@ import {
   sendVerificationEmail,
   verifyEmail,
 } from "../services/verifyEmail.service.js";
+import AppError from "../utils/AppError.js";
 
 export async function handleSendVerificationEmail(reqOrUser, res = null) {
   try {
@@ -18,7 +19,7 @@ export async function handleSendVerificationEmail(reqOrUser, res = null) {
     } else if (reqOrUser && reqOrUser.user) {
       user = reqOrUser.user;
     } else {
-      throw new Error("User not found");
+      throw new AppError("User not found", 404);
     }
 
     const token = await generateEmailVerificationToken(user._id);
@@ -36,25 +37,22 @@ export async function handleSendVerificationEmail(reqOrUser, res = null) {
     // If called internally for signup
     return { success: true, message: "Verification email sent!" };
   } catch (err) {
-    if (res) {
-      return res.render("auth/verify-email", {
+    if (res && err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/verify-email", {
         message: null,
         error: err.message,
         info: null,
       });
     }
-
-    // Internal call,
-    throw err;
+    throw err; // centralized error handler
   }
 }
 
 export async function handleResendVerificationEmail(req, res) {
   try {
-    // ✅ Fetch latest user from DB
     const user = await User.findById(req.user._id);
 
-    if (!user) throw new Error("User not found");
+    if (!user) throw new AppError("User not found", 404);
 
     if (user.isEmailVerified) {
       return res.render("auth/verify-email", {
@@ -73,11 +71,14 @@ export async function handleResendVerificationEmail(req, res) {
       info: "We’ve sent a verification link to your email. Please check your inbox and click on the link to verify your account.",
     });
   } catch (err) {
-    return res.render("auth/verify-email", {
-      message: null,
-      error: err.message,
-      info: null,
-    });
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/verify-email", {
+        message: null,
+        error: err.message,
+        info: null,
+      });
+    }
+    throw err; // centralized error handler
   }
 }
 
@@ -88,10 +89,13 @@ export async function handleVerifyEmail(req, res) {
 
     return res.render("auth/verify-email-success");
   } catch (err) {
-    return res.render("auth/verify-email-success", {
-      message: null,
-      error: err.message,
-      info: null,
-    });
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).render("auth/verify-email-success", {
+        message: null,
+        error: err.message,
+        info: null,
+      });
+    }
+    throw err; // centralized error handler
   }
 }
