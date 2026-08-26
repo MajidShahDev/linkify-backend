@@ -4,7 +4,11 @@ import { restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 import { getHomePageData } from "../services/url.service.js";
 import User from "../models/user.model.js";
-import { csrfProtection, attachCsrfToken } from "../middlewares/csrf.middleware.js";
+import {
+  csrfProtection,
+  attachCsrfToken,
+} from "../middlewares/csrf.middleware.js";
+import AppError from "../utils/AppError.js";
 
 const router = express.Router();
 
@@ -36,7 +40,7 @@ router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
 
   return res.render("auth/reset-password", {
     token, // needed in form action
-    error: null, 
+    error: null,
   });
 });
 
@@ -60,7 +64,7 @@ router.get("/admin/url", restrictTo(["ADMIN"]), async (req, res) => {
   });
 });
 
-router.get("/", restrictTo(["USER", "ADMIN"]),  async (req, res) => {
+router.get("/", restrictTo(["USER", "ADMIN"]), async (req, res) => {
   const data = await getHomePageData(req.user, req.query);
   res.render("home", {
     ...data,
@@ -78,6 +82,38 @@ router.get("/profile", async (req, res) => {
     error: req.query.error || null,
     success: req.query.success || null,
   });
+});
+
+router.get("/test/app-error", (req, res) => {
+  throw new AppError("This is a test AppError", 400);
+});
+
+router.get("/test/mongoose-validation", async (req, res) => {
+  const user = new User({
+    // intentionally missing required fields
+  });
+
+  await user.save();
+
+  res.send("Should not reach here");
+});
+
+router.get("/test/duplicate-key", async (req, res) => {
+  const user = await User.findOne();
+
+  await User.create({
+    name: user.name,
+    email: user.email, // existing email
+    password: "test123",
+  });
+
+  res.send("Should not reach here");
+});
+
+router.get("/test/cast-error", async (req, res) => {
+  await User.findById("this-is-not-a-valid-object-id");
+
+  res.send("Should not reach here");
 });
 
 export default router;
