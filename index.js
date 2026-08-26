@@ -30,7 +30,6 @@ import { handleStripeWebhook } from "./controllers/payment.controller.js";
 import { tryAuthenticateUser } from "./middlewares/auth.middleware.js";
 import { appLogger } from "./config/logger.js";
 import accessMiddleware from "./middlewares/accessLogger.middleware.js";
-import errorMiddleware from "./middlewares/errorLogger.middleware.js";
 import notFound from "./middlewares/notFound.middleware.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import {
@@ -117,7 +116,6 @@ app.use("/", verifyEmailRouter);
 app.use("/", forgotPasswordRouter);
 app.use("/", staticRouter);
 app.use("/", redirectRouter);
-app.use(errorMiddleware);
 app.use(notFound);
 app.use(errorHandler);
 

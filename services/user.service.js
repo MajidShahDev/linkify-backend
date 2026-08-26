@@ -6,7 +6,7 @@ import AppError from "../utils/AppError.js";
 export async function signup({ name, email, password }) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new AppError("User with this email already exists", 400);
+    throw new AppError("User with this email already exists", 409);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
