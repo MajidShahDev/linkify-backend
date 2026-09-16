@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import {rateLimit,  ipKeyGenerator} from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redis from "../config/redis.js";
 
@@ -89,7 +89,7 @@ export const emailOtpSendLimiter = rateLimit({
     sendCommand: (...args) => redis.call(...args),
     prefix: "otp:ratelimit:ip:",
   }),
-  keyGenerator: (req) => req.ip,
+   keyGenerator: (req) => ipKeyGenerator(req.ip),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 15, // max 15 OTP requests per IP
   standardHeaders: true,
