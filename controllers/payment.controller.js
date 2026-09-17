@@ -46,7 +46,7 @@ export async function handleStripeWebhook(req, res) {
       stack: err.stack,
     });
 
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send("Stripe Webhook signature verification failed.");
   }
 
   try {
@@ -80,28 +80,24 @@ export async function handleCustomerPortal(req, res) {
   return res.redirect(url);
 }
 
-export async function handlePaymentSuccess(req, res, next) {
-  try {
-    const { session_id: sessionId } = req.query;
+export async function handlePaymentSuccess(req, res) {
+  const { session_id: sessionId } = req.query;
 
-    if (!sessionId) {
-      return res.status(400).render("errors/400");
-    }
-
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (session.metadata.userId !== req.user._id.toString()) {
-      return res.status(403).render("errors/403");
-    }
-
-    if (session.payment_status !== "paid") {
-      return res.status(400).render("errors/400");
-    }
-
-    return res.render("payments/success");
-  } catch (err) {
-    next(err);
+  if (!sessionId) {
+    throw new AppError("Missing checkout session ID.", 400);
   }
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  if (session.metadata?.userId !== req.user._id.toString()) {
+    throw new AppError("Forbidden.", 403);
+  }
+
+  if (session.payment_status !== "paid") {
+    throw new AppError("Payment has not been completed.", 400);
+  }
+
+  return res.render("payments/success");
 }
 
 export async function handlePaymentCancel(req, res) {

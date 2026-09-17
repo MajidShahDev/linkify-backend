@@ -1,11 +1,12 @@
 import stripe from "./stripe.service.js";
 import User from "../models/user.model.js";
+import AppError from "../utils/AppError.js";
 
 export async function createOrGetCustomer(userId) {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   // Customer already exists
@@ -32,7 +33,7 @@ export async function createCheckoutSession(user, cancelToken) {
     user.subscription.plan === "PRO" &&
     user.subscription.status === "active"
   ) {
-    throw new Error("You already have an active Pro subscription.");
+    throw new AppError("You already have an active Pro subscription.", 409);
   }
 
   const session = await stripe.checkout.sessions.create({

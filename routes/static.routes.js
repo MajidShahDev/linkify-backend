@@ -84,36 +84,4 @@ router.get("/profile", async (req, res) => {
   });
 });
 
-router.get("/test/app-error", (req, res) => {
-  throw new AppError("This is a test AppError", 400);
-});
-
-router.get("/test/mongoose-validation", async (req, res) => {
-  const user = new User({
-    // intentionally missing required fields
-  });
-
-  await user.save();
-
-  res.send("Should not reach here");
-});
-
-router.get("/test/duplicate-key", async (req, res) => {
-  const user = await User.findOne();
-
-  await User.create({
-    name: user.name,
-    email: user.email, // existing email
-    password: "test123",
-  });
-
-  res.send("Should not reach here");
-});
-
-router.get("/test/cast-error", async (req, res) => {
-  await User.findById("this-is-not-a-valid-object-id");
-
-  res.send("Should not reach here");
-});
-
 export default router;

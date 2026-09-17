@@ -25,22 +25,56 @@ function handleCastError(err) {
   return new AppError(`Invalid ${err.path}: ${err.value}`, 400);
 }
 
+function handleStripeError(err) {
+  switch (err.type) {
+    case "StripeCardError":
+      return new AppError(
+        "Your card was declined. Please try another payment method.",
+        402
+      );
+
+    case "StripeInvalidRequestError":
+      return new AppError("Invalid payment request. Please try again.", 400);
+
+    case "StripeAuthenticationError":
+    case "StripePermissionError":
+      return new AppError(
+        "Payment service is temporarily unavailable. Please try again later.",
+        503
+      );
+
+    case "StripeRateLimitError":
+      return new AppError(
+        "Too many payment requests. Please try again later.",
+        429
+      );
+
+    case "StripeConnectionError":
+    case "StripeAPIError":
+      return new AppError(
+        "Payment service is temporarily unavailable. Please try again later.",
+        503
+      );
+
+    default:
+      return new AppError(
+        "Payment service error. Please try again later.",
+        502
+      );
+  }
+}
+
 export default function errorHandler(err, req, res, next) {
   let error = err;
 
-  // Mongoose validation error
   if (err.name === "ValidationError") {
     error = handleMongooseValidationError(err);
-  }
-
-  // MongoDB duplicate key error
-  else if (err.code === 11000) {
+  } else if (err.code === 11000) {
     error = handleDuplicateKeyError(err);
-  }
-
-  // Mongoose invalid ObjectId
-  else if (err.name === "CastError") {
+  } else if (err.name === "CastError") {
     error = handleCastError(err);
+  } else if (err.type?.startsWith("Stripe")) {
+    error = handleStripeError(err);
   }
 
   const statusCode = error.statusCode || 500;
@@ -77,8 +111,10 @@ export default function errorHandler(err, req, res, next) {
 
   // Here we dont expose technical details for unexpected production errors
   const message =
-    statusCode >= 500 && process.env.NODE_ENV === "production"
-      ? "Something went wrong. Please try again later."
+    statusCode >= 500 &&
+    process.env.NODE_ENV === "production" &&
+    !error.isOperational
+      ? "An unexpected server error occurred. Please try again later."
       : error.message || "Internal Server Error";
 
   // HTML response
