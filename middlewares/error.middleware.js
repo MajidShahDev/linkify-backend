@@ -64,6 +64,21 @@ function handleStripeError(err) {
   }
 }
 
+function handleRedisError(err) {
+  return new AppError(
+    "A temporary service error occurred. Please try again later.",
+    503
+  );
+}
+
+function isRedisError(err) {
+  return (
+    err?.name === "MaxRetriesPerRequestError" ||
+    err?.code === "ECONNREFUSED" ||
+    err?.code === "ECONNRESET"
+  );
+}
+
 export default function errorHandler(err, req, res, next) {
   let error = err;
 
@@ -75,6 +90,8 @@ export default function errorHandler(err, req, res, next) {
     error = handleCastError(err);
   } else if (err.type?.startsWith("Stripe")) {
     error = handleStripeError(err);
+  } else if (isRedisError(err)) {
+    error = handleRedisError(err);
   }
 
   const statusCode = error.statusCode || 500;
