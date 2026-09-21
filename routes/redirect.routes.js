@@ -1,7 +1,7 @@
 
 import express from "express";
 import { handleRedirectToOrignalURL } from "../controllers/url.controller.js";
-import { redirectLimiter } from "../middlewares/rateLimiter.js";
+import { redirectLimiter } from "../middlewares/rateLimiter.middleware.js";
 
 const router = express.Router();
 

@@ -5,7 +5,7 @@ import {
   handleVerifyEmail,
   handleResendVerificationEmail,
 } from "../controllers/verifyEmail.controller.js";
-import { generalAuthLimiter } from "../middlewares/rateLimiter.js";
+import { generalAuthLimiter } from "../middlewares/rateLimiter.middleware.js";
 
 
 const router = express.Router();

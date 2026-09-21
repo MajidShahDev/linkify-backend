@@ -3,7 +3,7 @@ import { body } from "express-validator";
 import {
   generalAuthLimiter,
   loginLimiter,
-} from "../middlewares/rateLimiter.js";
+} from "../middlewares/rateLimiter.middleware.js";
 import { restrictTo } from "../middlewares/auth.middleware.js"; 
 import {
   handleUserSignup,
