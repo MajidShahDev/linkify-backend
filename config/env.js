@@ -35,6 +35,24 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
+const secretEnvVars = [
+  "JWT_SECRET",
+  "STATE_SECRET",
+  "OBFUSCATION_SECRET",
+  "SESSION_SECRET",
+];
+
+for (const key of secretEnvVars) {
+  if (process.env[key].length < 32) {
+    appLogger.error({
+      type: "environment-validation",
+      message: `${key} must be at least 32 characters long.`,
+    });
+
+    process.exit(1);
+  }
+}
+
 const port = Number(process.env.PORT);
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
