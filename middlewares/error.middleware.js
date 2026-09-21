@@ -1,6 +1,7 @@
 import AppError from "../utils/AppError.js";
 import { appLogger } from "../config/logger.js";
 import * as Sentry from "@sentry/node";
+import sanitizeRequestData from "../utils/sanitizeRequestData.js";
 
 function handleMongooseValidationError(err) {
   const message = Object.values(err.errors)
@@ -109,9 +110,9 @@ export default function errorHandler(err, req, res, next) {
       statusCode,
     },
     extra: {
-      body: req.body,
-      params: req.params,
-      query: req.query,
+      body: sanitizeRequestData(req.body),
+      params: sanitizeRequestData(req.params),
+      query: sanitizeRequestData(req.query),
     },
   });
 
