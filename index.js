@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "./config/env.js";
 import "./cronJobs/updateClicks.js";
 import "./cronJobs/flushClicks.js";
 import "./config/crashHandlers.js";
