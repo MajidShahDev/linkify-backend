@@ -9,7 +9,7 @@ import {
   emailOtpSendLimiter,
   generalAuthLimiter,
   otpUserLimiter,
-} from "../middlewares/rateLimiter.js";
+} from "../middlewares/rateLimiter.middleware.js";
 import { requireTempUser } from "../middlewares/tempUser.middleware.js";
 
 const router = express.Router();

@@ -3,7 +3,7 @@ import express from "express";
 import { body } from "express-validator";
 import qrService from "qrcode";
 import URL from "../models/url.model.js";
-import { analyticsLimiter, createShortUrlLimiter } from "../middlewares/rateLimiter.js";
+import { analyticsLimiter, createShortUrlLimiter } from "../middlewares/rateLimiter.middleware.js";
 import {
   handleCreateNewShortUrl,
   handleGetAnalytics,

@@ -4,7 +4,7 @@ import { generateToken } from "../services/auth.service.js";
 import {
   generateOAuthState,
   verifyOAuthState,
-} from "../middlewares/oauthState.js";
+} from "../middlewares/oauthState.middleware.js";
 
 const router = express.Router();
 
