@@ -1,8 +1,15 @@
 import Redis from "ioredis";
 import { appLogger } from "./logger.js";
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-redis.on('ready', () => console.log('Redis: Ready'));
+const redis = new Redis(process.env.REDIS_URL);
+
+redis.on("ready", () => {
+  appLogger.info({
+    type: "redis",
+    message: "Redis connection ready",
+  });
+});
+
 redis.on("error", (err) => {
   appLogger.error({
     type: "redis-error",
