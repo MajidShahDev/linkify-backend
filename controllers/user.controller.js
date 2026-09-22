@@ -63,6 +63,7 @@ export async function handleUserSignup(req, res) {
 }
 
 export async function handleUserLogin(req, res) {
+  const continueToken = req.body.continue;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const fieldErrors = {};
@@ -73,9 +74,10 @@ export async function handleUserLogin(req, res) {
     return res.status(400).render("auth/login", {
       errors: fieldErrors,
       oldInput: { email: req.body.email || "" },
+      continueToken: continueToken || null,
     });
   }
-
+  
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -84,6 +86,7 @@ export async function handleUserLogin(req, res) {
       return res.status(400).render("auth/login", {
         errors: { general: ["Invalid email or password"] },
         oldInput: { email },
+        continueToken: continueToken || null,
       });
     }
 
@@ -95,6 +98,7 @@ export async function handleUserLogin(req, res) {
           ],
         },
         oldInput: { email },
+        continueToken: continueToken || null,
       });
     }
 
@@ -111,7 +115,8 @@ export async function handleUserLogin(req, res) {
         type: "email",
         purpose: "login",
       };
-
+      req.session.continueToken = continueToken || null;
+      
       return res.redirect("/auth/verify-otp-email");
     }
 
@@ -130,6 +135,7 @@ export async function handleUserLogin(req, res) {
       return res.status(err.statusCode).render("auth/login", {
         errors: { general: [err.message] },
         oldInput: { email: req.body.email || "" },
+        continueToken: continueToken || null,
       });
     }
     throw err; // centralized error handler
