@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import redis from "../config/redis";
+import redis from "../config/redis.js";
 
 const PENDING_URL_TTL = 600;
 

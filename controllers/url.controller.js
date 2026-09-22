@@ -8,19 +8,47 @@ import {
   deleteShortUrl,
   editOriginalUrl,
 } from "../services/url.service.js";
+import { savePendingUrl } from "../services/pendingUrl.service.js";
 import AppError from "../utils/AppError.js";
 
 export async function handleCreateNewShortUrl(req, res) {
   const errors = validationResult(req);
-  const data = await getHomePageData(req.user, req.query);
 
   if (!errors.isEmpty()) {
+    if (!req.user) {
+      return res.status(400).render("home-public", {
+        csrfToken: req.csrfToken(),
+        errors: errors.array().map((err) => err.msg),
+        oldInput: {
+          url: req.body.url || "",
+          customAlias: req.body.customAlias || "",
+          expiresAt: req.body.expiresAt || "",
+        },
+      });
+    }
+
+    const data = await getHomePageData(req.user, req.query);
+
     return res.status(400).render("home", {
       ...data,
       errors: errors.array().map((err) => err.msg),
-      oldInput: { url: req.body.url, customAlias: req.body.customAlias },
+      oldInput: {
+        url: req.body.url || "",
+        customAlias: req.body.customAlias || "",
+        expiresAt: req.body.expiresAt || "",
+      },
       search: (req.query.search || "").trim(),
     });
+  }
+
+  if (!req.user) {
+    const token = await savePendingUrl({
+      originalUrl: req.body.url,
+      expiresAt: req.body.expiresAt,
+      customAlias: req.body.customAlias,
+    });
+
+    return res.redirect(`/login?continue=${token}`);
   }
 
   try {
