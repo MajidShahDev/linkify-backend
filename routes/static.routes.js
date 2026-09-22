@@ -23,6 +23,7 @@ router.get("/login", async (req, res) => {
   return res.render("auth/login", {
     errors: {},
     oldInput: {},
+    continueToken: req.query.continue || null,
   });
 });
 
