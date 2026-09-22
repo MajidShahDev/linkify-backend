@@ -68,6 +68,8 @@ router.get("/", async (req, res) => {
   if (!req.user) {
     return res.render("home-public", {
       csrfToken: req.csrfToken(),
+      errors: [],
+      oldInput: {},
     });
   }
   const data = await getHomePageData(req.user, req.query);
