@@ -5,11 +5,11 @@ import crypto from "crypto";
 export function generateOAuthState(req, res, next) {
   try {
     req.oauthState = jwt.sign(
-      { nonce: crypto.randomUUID() },
+      { nonce: crypto.randomUUID(), continueToken: req.query.continue || null },
       process.env.STATE_SECRET,
       { expiresIn: "5m" }
     );
-      // console.log("oauth state generated successfully", req.oauthState);
+    // console.log("oauth state generated successfully", req.oauthState);
     next();
   } catch (err) {
     next(err);
@@ -22,7 +22,7 @@ export function verifyOAuthState(req, res, next) {
     const state = req.query.state;
     if (!state) return res.status(400).json({ error: "Missing state" });
 
-    jwt.verify(state, process.env.STATE_SECRET);
+    req.oauthState = jwt.verify(state, process.env.STATE_SECRET);
     next();
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired state" });

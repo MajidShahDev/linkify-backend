@@ -127,7 +127,7 @@
             <a href="/signup">Sign up</a>
         </div>
         <!-- <hr class=""> -->
-        <a href="/auth/google">
+        <a href="/auth/google<%= continueToken ? `?continue=${encodeURIComponent(continueToken)}` : '' %>">
             <button type="button" style="background:#db4437;">
                 Continue with Google
             </button>
