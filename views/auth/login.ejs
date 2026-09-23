@@ -116,6 +116,7 @@
                                 <% } %>
 
                                     <button type="submit">Login</button>
+                                    <input type="hidden" name="continue" value="<%= continueToken || '' %>">
         </form>
 
         <div class="footer">
@@ -128,10 +129,9 @@
         <!-- <hr class=""> -->
         <a href="/auth/google">
             <button type="button" style="background:#db4437;">
-                Login with Google
+                Continue with Google
             </button>
         </a>
-        <input type="hidden" name="continue" value="<%= continueToken || '' %>">
     </div>
 
 </body>

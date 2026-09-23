@@ -3,6 +3,7 @@ import { generateToken } from "../services/auth.service.js";
 import { sendEmailOTP } from "../services/otpEmail.service.js";
 import { storeOtp, verifyOtp } from "../services/otp.service.js";
 import AppError from "../utils/AppError.js";
+import { handleLoginContinuation } from "./user.controller.js";
 
 export function verifyEmailOTPPage(req, res) {
   res.render("auth/verify-otp-email", { errors: {}, message: null });
@@ -47,7 +48,7 @@ export async function handleVerifyOTP(req, res) {
       });
       req.session.tempUserId = null;
       req.session.otp = null;
-      return res.redirect("/");
+      return handleLoginContinuation(req, res, user, req.session.continueToken);
     }
     case "enable-2fa": {
       user.twoFactorEnabled = true;

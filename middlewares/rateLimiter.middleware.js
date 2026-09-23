@@ -61,6 +61,7 @@ export const loginLimiter = rateLimit({
           "Too many login attempts. Please try again after 15 minutes.",
         ],
       },
+      continueToken: req.query.continue || null,
       oldInput: { email: req.body?.email || "" }, // keep email input
     });
   },
