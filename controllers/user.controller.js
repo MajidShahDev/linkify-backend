@@ -3,13 +3,13 @@ import { signup, login } from "../services/user.service.js";
 import { handleSendVerificationEmail } from "../controllers/verifyEmail.controller.js";
 import { sendEmailOTP } from "../services/otpEmail.service.js";
 import User from "../models/user.model.js";
-import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { handleSendEmailOTP } from "./2fa.controller.js";
 import { appLogger } from "../config/logger.js";
-import { storeOtp, verifyOtp } from "../services/otp.service.js";
+import { storeOtp } from "../services/otp.service.js";
 import AppError from "../utils/AppError.js";
+import { processLoginContinuation } from "../services/loginContinuation.service.js";
 
 export async function handleUserSignup(req, res) {
   const errors = validationResult(req);
@@ -45,6 +45,7 @@ export async function handleUserSignup(req, res) {
         name: "",
         email: req.body.email || "",
       },
+      continueToken: req.query.continue || null
     });
   } catch (err) {
     if (err instanceof AppError) {
@@ -62,8 +63,19 @@ export async function handleUserSignup(req, res) {
   }
 }
 
+export async function handleLoginContinuation(req, res, user, continueToken) {
+  const urlEntry = await processLoginContinuation(user, continueToken);
+
+  if (!urlEntry) {
+    return res.redirect("/");
+  }
+
+  return res.redirect(`/?created=${urlEntry.shortId}`);
+}
+
 export async function handleUserLogin(req, res) {
   const continueToken = req.body.continue;
+  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const fieldErrors = {};
@@ -128,8 +140,7 @@ export async function handleUserLogin(req, res) {
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30,
     });
-
-    return res.redirect("/");
+    return handleLoginContinuation(req, res, result.user, continueToken);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).render("auth/login", {
