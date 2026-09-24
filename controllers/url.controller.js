@@ -13,6 +13,7 @@ import AppError from "../utils/AppError.js";
 
 export async function handleCreateNewShortUrl(req, res) {
   const errors = validationResult(req);
+  const data = await getHomePageData(req.user, req.query);
 
   if (!errors.isEmpty()) {
     if (!req.user) {
@@ -26,8 +27,6 @@ export async function handleCreateNewShortUrl(req, res) {
         },
       });
     }
-
-    const data = await getHomePageData(req.user, req.query);
 
     return res.status(400).render("home", {
       ...data,
