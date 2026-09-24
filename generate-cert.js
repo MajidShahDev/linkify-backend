@@ -9,22 +9,16 @@ async function generateCert() {
     algorithm: "sha256",
   });
 
-  // console.log(pems);
-
   fs.mkdirSync("./ssl", { recursive: true });
 
   fs.writeFileSync("./ssl/key.pem", pems.privateKey || pems.private);
   fs.writeFileSync("./ssl/cert.pem", pems.cert);
 
-  console.log("SSL certificate generated successfully!");
 }
 
-generateCert();
+generateCert().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
 
-// PEM = Privacy Enhanced Mail(Base64-encoded text format for cryptographic data)
-//
-// cert.pem (Certificate) > This file contains:
-// > Public key
-// > Domain info (localhost, yourdomain.com)
-// > Signature
-// > Issuer info (self-signed or CA)
+
