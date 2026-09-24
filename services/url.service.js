@@ -7,6 +7,7 @@ import RESERVED_ALIASES from "../utils/reservedAliases.js";
 import { checkCustomAliasQuota } from "./subscription.service.js";
 import redis from "../config/redis.js";
 import AppError from "../utils/AppError.js";
+import { appLogger } from "../config/logger.js";
 
 const CACHE_TTL = 60 * 60; // 1 hour
 const CACHE_PREFIX = "cache:url:";
@@ -99,25 +100,43 @@ export async function recordVisit(shortId, req) {
   try {
     const cached = await redis.get(cacheKey);
     if (cached) {
-      console.log(`[CACHE HIT] ${shortId}`);
       const parsed = JSON.parse(cached);
       if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
         await redis.del(cacheKey);
         throw new AppError("Invalid or expired link", 404);
       }
 
-      redis.incr(`clicks:${parsed.dbId}`).catch(() => {});
-      redis.expire(`clicks:${parsed.dbId}`, 86400).catch(() => {});
+      redis.incr(`clicks:${parsed.dbId}`).catch((error) => {
+        appLogger.error({
+          type: "redis-error",
+          operation: "incr-clicks",
+          message: error.message,
+          stack: error.stack,
+        });
+      });
+
+      redis.expire(`clicks:${parsed.dbId}`, 86400).catch((error) => {
+        appLogger.error({
+          type: "redis-error",
+          operation: "expire-clicks",
+          message: error.message,
+          stack: error.stack,
+        });
+      });
 
       return { redirectURL: parsed.redirectURL, _id: parsed.dbId };
-    } else {
-      console.log(`[CACHE MISS] ${shortId}`);
     }
-  } catch (err) {
-    if (err instanceof AppError) {
-      throw err;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
-    console.error("Redis error:", err.message);
+
+    appLogger.error({
+      type: "redis-error",
+      operation: "cache-read",
+      message: error.message,
+      stack: error.stack,
+    });
   }
 
   // 2. Cache MISS - Original DB logic
@@ -128,7 +147,7 @@ export async function recordVisit(shortId, req) {
     try {
       const dbId = decodeShortId(shortId);
       entry = await URL.findById(dbId);
-    } catch {
+    } catch (error) {
       throw new AppError("Invalid or expired link", 404);
     }
   }
