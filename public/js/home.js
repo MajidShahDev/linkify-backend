@@ -120,8 +120,6 @@ document.querySelectorAll(".redirectText").forEach((text) => {
 
 document.querySelectorAll(".qrIcon").forEach((icon) => {
   icon.addEventListener("click", () => {
-    console.log("Qr clicked");
-    console.log(icon.dataset.id);
     openQr(icon.dataset.id);
   });
 });
