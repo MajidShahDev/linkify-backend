@@ -1,4 +1,3 @@
-import User from "../models/user.model.js";
 import { verifyToken } from "../services/auth.service.js";
 
 export function tryAuthenticateUser(req, res, next) {
@@ -13,6 +12,14 @@ export function tryAuthenticateUser(req, res, next) {
   return next();
 }
 
+export function redirectIfAuthenticated(req, res, next) {
+  if (req.user) {
+    return res.redirect("/");
+  }
+
+  next();
+}
+
 export function restrictTo(roles = ["USER", "ADMIN"]) {
   return function (req, res, next) {
     if (!req.user) return res.redirect("/login");
@@ -20,5 +27,6 @@ export function restrictTo(roles = ["USER", "ADMIN"]) {
     return next();
   };
 }
+
 
 
