@@ -102,7 +102,7 @@ export async function handleUserLogin(req, res) {
       });
     }
 
-    if (user.provider === "google" || user.password === null) {
+    if (user.provider === "google" && user.password === null) {
       return res.status(400).render("auth/login", {
         errors: {
           general: [
