@@ -40,7 +40,7 @@ router.get("/reset-password/:token", resetPasswordTokenRequired, (req, res) => {
   });
 });
 
-router.get("/verify-email", async (req, res) => {
+router.get("/verify-email", restrictTo(["USER", "ADMIN"]), async (req, res) => {
   return res.render("auth/verify-email", {
     message: null,
     error: null,
