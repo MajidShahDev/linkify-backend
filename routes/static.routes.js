@@ -1,25 +1,20 @@
 import express from "express";
 import URL from "../models/url.model.js";
-import { restrictTo } from "../middlewares/auth.middleware.js";
+import { redirectIfAuthenticated, restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 import { getHomePageData } from "../services/url.service.js";
 import User from "../models/user.model.js";
-import {
-  csrfProtection,
-  attachCsrfToken,
-} from "../middlewares/csrf.middleware.js";
-import AppError from "../utils/AppError.js";
 
 const router = express.Router();
 
-router.get("/signup", async (req, res) => {
+router.get("/signup", redirectIfAuthenticated, async (req, res) => {
   return res.render("auth/signup", {
     errors: {},
     oldInput: {},
   });
 });
 
-router.get("/login", async (req, res) => {
+router.get("/login", redirectIfAuthenticated, async (req, res) => {
   return res.render("auth/login", {
     errors: {},
     oldInput: {},
@@ -27,7 +22,7 @@ router.get("/login", async (req, res) => {
   });
 });
 
-router.get("/forgot-password", async (req, res) => {
+router.get("/forgot-password", redirectIfAuthenticated, async (req, res) => {
   return res.render("auth/forgot-password", {
     message: null,
     error: null,

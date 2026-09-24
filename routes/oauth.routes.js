@@ -6,10 +6,11 @@ import {
   generateOAuthState,
   verifyOAuthState,
 } from "../middlewares/oauthState.middleware.js";
+import { redirectIfAuthenticated } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/google", generateOAuthState, (req, res, next) => {
+router.get("/google", redirectIfAuthenticated, generateOAuthState, (req, res, next) => {
   passport.authenticate("google", {
     scope: ["profile", "email"],
     prompt: "consent select_account", // forces user to choose account and confirm consent every time.
