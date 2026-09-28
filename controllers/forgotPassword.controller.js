@@ -32,7 +32,7 @@ export async function handleForgotPassword(req, res) {
     await sendResetEmail(email, token);
 
     return res.render("auth/forgot-password", {
-      message: "Please check your email for a link to reset your password.Z",
+      message: "Please check your email for a link to reset your password.",
       error: null,
       errors: null,
       oldInput: { email },
