@@ -4,7 +4,7 @@ import {
   generalAuthLimiter,
   loginLimiter,
 } from "../middlewares/rateLimiter.middleware.js";
-import { restrictTo } from "../middlewares/auth.middleware.js"; 
+import { preventCache, restrictTo } from "../middlewares/auth.middleware.js"; 
 import {
   handleUserSignup,
   handleUserLogin,
@@ -35,6 +35,7 @@ router.post(
 router.post(
   "/login",
   loginLimiter,
+  preventCache,
   [
     body("email")
       .notEmpty()

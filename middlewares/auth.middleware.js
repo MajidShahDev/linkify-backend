@@ -32,3 +32,8 @@ export function restrictTo(roles = ["USER", "ADMIN"]) {
     return next();
   };
 }
+
+export const preventCache = (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+};
