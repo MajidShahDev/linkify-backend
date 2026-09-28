@@ -81,7 +81,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(morgan("dev"));
+app.use(
+  morgan("dev", {
+    skip: (req) =>
+      req.originalUrl.startsWith("/css/") ||
+      req.originalUrl.startsWith("/js/") ||
+      req.originalUrl.startsWith("/images/") ||
+      req.originalUrl === "/.well-known/appspecific/com.chrome.devtools.json",
+  })
+);
 app.use(express.static("public"));
 app.use(
   session({
