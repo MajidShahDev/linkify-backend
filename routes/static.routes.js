@@ -1,6 +1,6 @@
 import express from "express";
 import URL from "../models/url.model.js";
-import { redirectIfAuthenticated, restrictTo } from "../middlewares/auth.middleware.js";
+import { preventCache, redirectIfAuthenticated, restrictTo } from "../middlewares/auth.middleware.js";
 import { resetPasswordTokenRequired } from "../middlewares/tokenRequired.middleware.js";
 import { getHomePageData } from "../services/url.service.js";
 import User from "../models/user.model.js";
@@ -14,12 +14,21 @@ router.get("/signup", redirectIfAuthenticated, async (req, res) => {
   });
 });
 
-router.get("/login", redirectIfAuthenticated, async (req, res) => {
+router.get("/login", preventCache, redirectIfAuthenticated,  async (req, res) => {
   return res.render("auth/login", {
     errors: {},
     oldInput: {},
     continueToken: req.query.continue || null,
   });
+});
+
+router.get("/auth/session", (req, res) => {
+  console.log("reached session", req.user);
+  if (!req.user) {
+    return res.sendStatus(401);
+  }
+
+  return res.sendStatus(204);
 });
 
 router.get("/forgot-password", redirectIfAuthenticated, async (req, res) => {
