@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { randomUUID } from "node:crypto";
 import URL from "../models/url.model.js";
 import Counter from "../models/counter.model.js";
 import geoip from "geoip-lite";
@@ -92,6 +92,41 @@ export async function createShortUrl(
   };
 }
 
+function createVisit(req) {
+  const ip =
+    req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+  const geo = geoip.lookup(ip);
+
+  return {
+    eventId: randomUUID(),
+    timestamp: new Date(),
+    ipAddress: ip,
+    userAgent: req.get("User-Agent"),
+    referrer: req.get("Referrer") || "Direct",
+    location: geo
+      ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
+      : "Unknown",
+  };
+}
+
+async function recordVisitInRedis(dbId, req) {
+  const visit = createVisit(req);
+
+  try {
+    await redis.rpush(`visits:${dbId}`, JSON.stringify(visit));
+  } catch (error) {
+    appLogger.error({
+      type: "redis-error",
+      operation: "record-visit",
+      message: error.message,
+      stack: error.stack,
+    });
+
+    throw error;
+  }
+}
+
 export async function recordVisit(shortId, req) {
   const normalized = shortId.toLowerCase();
   const cacheKey = getCacheKey(normalized);
@@ -99,6 +134,7 @@ export async function recordVisit(shortId, req) {
   // Try Redis cache first
   try {
     const cached = await redis.get(cacheKey);
+
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
@@ -106,23 +142,7 @@ export async function recordVisit(shortId, req) {
         throw new AppError("Invalid or expired link", 404);
       }
 
-      redis.incr(`clicks:${parsed.dbId}`).catch((error) => {
-        appLogger.error({
-          type: "redis-error",
-          operation: "incr-clicks",
-          message: error.message,
-          stack: error.stack,
-        });
-      });
-
-      redis.expire(`clicks:${parsed.dbId}`, 86400).catch((error) => {
-        appLogger.error({
-          type: "redis-error",
-          operation: "expire-clicks",
-          message: error.message,
-          stack: error.stack,
-        });
-      });
+      await recordVisitInRedis(parsed.dbId, req);
 
       return { redirectURL: parsed.redirectURL, _id: parsed.dbId };
     }
@@ -195,18 +215,7 @@ export async function recordVisit(shortId, req) {
     }
   }
 
-  // Record click in DB
-  entry.clicks += 1;
-  entry.visitHistory.push({
-    timestamp: Date.now(),
-    ipAddress: ip,
-    userAgent: req.get("User-Agent"),
-    referrer: req.get("Referrer") || "Direct",
-    location: geo
-      ? `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`
-      : "Unknown",
-  });
-  await entry.save();
+  await recordVisitInRedis(entry._id, req);
 
   return entry;
 }
