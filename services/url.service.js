@@ -212,15 +212,23 @@ export async function recordVisit(shortId, req) {
 }
 
 export async function getAnalytics(shortId, timeRange, page = 1, limit = 15) {
-  let dbId;
+  let url;
 
-  try {
-    dbId = decodeShortId(shortId);
-  } catch {
-    throw new AppError("Short URL not found", 404);
+  // Resolve custom aliases first.
+  url = await URL.findOne({ customAlias: shortId }, "visitHistory");
+
+  // Fall back to generated short IDs.
+  if (!url) {
+    let dbId;
+
+    try {
+      dbId = decodeShortId(shortId);
+    } catch {
+      throw new AppError("Short URL not found", 404);
+    }
+
+    url = await URL.findById(dbId, "visitHistory");
   }
-
-  const url = await URL.findById(dbId, "visitHistory"); // only need visitHistory
 
   if (!url) {
     throw new AppError("Short URL not found", 404);
