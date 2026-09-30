@@ -48,7 +48,8 @@ const urlSchema = new mongoose.Schema(
     },
     visitHistory: [
       {
-        timestamp: { type: Date },
+        eventId: { type: String, required: true },
+        timestamp: { type: Date, required: true },
         ipAddress: { type: String },
         location: { type: String },
         userAgent: { type: String },
