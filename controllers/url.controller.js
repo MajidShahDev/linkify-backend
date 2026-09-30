@@ -1,6 +1,5 @@
 import { validationResult } from "express-validator";
 import { getHomePageData } from "../services/url.service.js";
-import URL from "../models/url.model.js";
 import {
   createShortUrl,
   recordVisit,
@@ -13,7 +12,6 @@ import AppError from "../utils/AppError.js";
 
 export async function handleCreateNewShortUrl(req, res) {
   const errors = validationResult(req);
-  const data = await getHomePageData(req.user, req.query);
 
   if (!errors.isEmpty()) {
     if (!req.user) {
@@ -27,6 +25,8 @@ export async function handleCreateNewShortUrl(req, res) {
         },
       });
     }
+
+    const data = await getHomePageData(req.user, req.query);
 
     return res.status(400).render("home", {
       ...data,
@@ -61,7 +61,9 @@ export async function handleCreateNewShortUrl(req, res) {
     // PRG
     return res.redirect("/?created=" + urlEntry.shortId);
   } catch (err) {
-    if(err instanceof AppError){
+    const data = await getHomePageData(req.user, req.query);
+
+    if (err instanceof AppError) {
       return res.status(err.statusCode).render("home", {
         ...data,
         errors: [err.message],
