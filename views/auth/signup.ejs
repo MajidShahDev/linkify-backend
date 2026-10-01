@@ -127,6 +127,7 @@
                                         <% } %>
 
                                             <button type="submit">Create Account</button>
+                                            <input type="hidden" name="continue" value="<%= continueToken || "" %>">
         </form>
 
 
@@ -139,4 +140,3 @@
 </body>
 
 </html>
-

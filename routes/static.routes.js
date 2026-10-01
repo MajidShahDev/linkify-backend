@@ -11,6 +11,7 @@ router.get("/signup", redirectIfAuthenticated, async (req, res) => {
   return res.render("auth/signup", {
     errors: {},
     oldInput: {},
+    continueToken: req.query.continue || null
   });
 });
 
