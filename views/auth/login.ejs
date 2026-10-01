@@ -129,7 +129,9 @@
                 </div>
                 <div class="footer">
                     Don’t have an account?
-                    <a href="/signup">Sign up</a>
+                    <a href="/signup?continue=<%= continueToken || "" %>">
+                        Sign up
+                    </a>
                 </div>
                 <!-- <hr class=""> -->
                 <a href="/auth/google<%= continueToken ? `?continue=${encodeURIComponent(continueToken)}` : '' %>">

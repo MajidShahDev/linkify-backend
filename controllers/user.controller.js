@@ -45,7 +45,7 @@ export async function handleUserSignup(req, res) {
         name: "",
         email: req.body.email || "",
       },
-      continueToken: req.query.continue || null
+      continueToken: req.body.continue || null
     });
   } catch (err) {
     if (err instanceof AppError) {
