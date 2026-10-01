@@ -84,6 +84,7 @@ export async function handleUserLogin(req, res) {
       fieldErrors[err.path].push(err.msg);
     });
     return res.status(400).render("auth/login", {
+      message: req.body.message || null,
       errors: fieldErrors,
       oldInput: { email: req.body.email || "" },
       continueToken: continueToken || null,
@@ -96,6 +97,7 @@ export async function handleUserLogin(req, res) {
 
     if (!user) {
       return res.status(400).render("auth/login", {
+        message: req.body.message || null,
         errors: { general: ["Invalid email or password"] },
         oldInput: { email },
         continueToken: continueToken || null,
@@ -104,6 +106,7 @@ export async function handleUserLogin(req, res) {
 
     if (user.provider === "google" && user.password === null) {
       return res.status(400).render("auth/login", {
+        message: req.body.message || null,
         errors: {
           general: [
             "You signed up using Google. Please login with Google first.",
@@ -144,6 +147,7 @@ export async function handleUserLogin(req, res) {
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).render("auth/login", {
+        message: req.body.message || null,
         errors: { general: [err.message] },
         oldInput: { email: req.body.email || "" },
         continueToken: continueToken || null,
