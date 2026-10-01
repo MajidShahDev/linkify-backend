@@ -47,7 +47,11 @@ export async function handleCreateNewShortUrl(req, res) {
       customAlias: req.body.customAlias,
     });
 
-    return res.redirect(`/login?continue=${token}`);
+    const message = encodeURIComponent(
+      "Please log in or sign up to access your shortened URL."
+    );
+
+    return res.redirect(`/login?continue=${token}&message=${message}`);
   }
 
   try {

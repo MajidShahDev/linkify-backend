@@ -82,56 +82,61 @@
 
     <div class="container">
         <h1>Login</h1>
+        <% if (message) { %>
+            <p style="color:green; text-align:center;">
+                <%= message %>
+            </p>
+            <% } %>
+                <form action="/user/login" method="POST" novalidate>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-        <form action="/user/login" method="POST" novalidate>
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-
-            <!-- Email -->
-            <label>
-                Email
-                <input type="email" name="email" value="<%= oldInput ? oldInput.email : '' %>" required>
-            </label>
-            <% if (errors && errors.email) { %>
-                <p style="color:red">
-                    <%= errors.email[0] %>
-                </p>
-                <% } %>
-
-                    <!-- Password -->
+                    <!-- Email -->
                     <label>
-                        Password
-                        <input type="password" name="password" required>
+                        Email
+                        <input type="email" name="email" value="<%= oldInput ? oldInput.email : '' %>" required>
                     </label>
-                    <% if (errors && errors.password) { %>
+                    <% if (errors && errors.email) { %>
                         <p style="color:red">
-                            <%= errors.password[0] %>
+                            <%= errors.email[0] %>
                         </p>
                         <% } %>
 
-                            <!-- General error -->
-                            <% if (errors && errors.general) { %>
+                            <!-- Password -->
+                            <label>
+                                Password
+                                <input type="password" name="password" required>
+                            </label>
+                            <% if (errors && errors.password) { %>
                                 <p style="color:red">
-                                    <%= errors.general[0] %>
+                                    <%= errors.password[0] %>
                                 </p>
                                 <% } %>
 
-                                    <button type="submit">Login</button>
-                                    <input type="hidden" name="continue" value="<%= continueToken || '' %>">
-        </form>
+                                    <!-- General error -->
+                                    <% if (errors && errors.general) { %>
+                                        <p style="color:red">
+                                            <%= errors.general[0] %>
+                                        </p>
+                                        <% } %>
 
-        <div class="footer">
-            <a href="/forgot-password">Forgot password?</a>
-        </div>
-        <div class="footer">
-            Don’t have an account?
-            <a href="/signup">Sign up</a>
-        </div>
-        <!-- <hr class=""> -->
-        <a href="/auth/google<%= continueToken ? `?continue=${encodeURIComponent(continueToken)}` : '' %>">
-            <button type="button" style="background:#db4437;">
-                Continue with Google
-            </button>
-        </a>
+                                            <button type="submit">Login</button>
+                                            <input type="hidden" name="continue" value="<%= continueToken || '' %>">
+                                            <input type="hidden" name="message" value="<%= message || "" %>">
+                </form>
+
+                <div class="footer">
+                    <a href="/forgot-password">Forgot password?</a>
+                </div>
+                <div class="footer">
+                    Don’t have an account?
+                    <a href="/signup">Sign up</a>
+                </div>
+                <!-- <hr class=""> -->
+                <a href="/auth/google<%= continueToken ? `?continue=${encodeURIComponent(continueToken)}` : '' %>">
+                    <button type="button" style="background:#db4437;">
+                        Continue with Google
+                    </button>
+                </a>
     </div>
 
     <script src="/js/login.js"></script>

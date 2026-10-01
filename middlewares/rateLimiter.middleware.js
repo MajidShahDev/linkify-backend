@@ -1,6 +1,7 @@
 import {rateLimit,  ipKeyGenerator} from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redis from "../config/redis.js";
+import { getHomePageData } from "../services/url.service.js";
 
 // Per-User OTP limit (5 otp per 15 minute per user)
 export const otpUserLimiter = async (req, res, next) => {
@@ -55,7 +56,7 @@ export const loginLimiter = rateLimit({
   legacyHeaders: false,
   handler: async (req, res) => {
     return res.status(429).render("auth/login", {
-      // ...data,
+      message: req.body?.message || null,
       errors: {
         general: [
           "Too many login attempts. Please try again after 15 minutes.",
@@ -139,6 +140,8 @@ export const createShortUrlLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: async (req, res) => {
+    const data = await getHomePageData(req.user, req.query);
+    
     return res.status(429).render("home", {
       ...data,
       errors: ["Too many URL creation requests. Please try again later."],

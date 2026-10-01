@@ -18,6 +18,7 @@ router.get("/login", preventCache, redirectIfAuthenticated,  async (req, res) =>
   return res.render("auth/login", {
     errors: {},
     oldInput: {},
+    message: req.query.message || null,
     continueToken: req.query.continue || null,
   });
 });
