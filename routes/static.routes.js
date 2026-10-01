@@ -25,7 +25,6 @@ router.get("/login", preventCache, redirectIfAuthenticated,  async (req, res) =>
 });
 
 router.get("/auth/session", (req, res) => {
-  console.log("reached session", req.user);
   if (!req.user) {
     return res.sendStatus(401);
   }
@@ -88,7 +87,7 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.get("/profile", async (req, res) => {
+router.get("/profile", restrictTo(["USER", "ADMIN"]), async (req, res) => {
   const freshUser = await User.findById(req.user._id);
 
   res.render("profile", {
