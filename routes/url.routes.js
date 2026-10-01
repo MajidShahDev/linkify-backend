@@ -13,6 +13,7 @@ import {
 import { csrfProtection } from "../middlewares/csrf.middleware.js";
 import RESERVED_ALIASES from "../utils/reservedAliases.js";
 import { requireFeature } from "../middlewares/requirePro.middleware.js";
+import { restrictTo } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -62,7 +63,7 @@ router.get("/qr/:shortId", async (req, res) => {
   res.json({ qr });
 });
 
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', restrictTo(['USER', 'ADMIN']), async (req, res) => {
   const urls = await URL.find();
 
   // Get time range from query, default to 'all'
